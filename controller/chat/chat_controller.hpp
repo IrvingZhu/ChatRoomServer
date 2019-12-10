@@ -82,11 +82,6 @@ public:
     {
         // begin start,receive the message.
         room_.join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
-        // boost::asio::async_read(socket_,
-        //                         boost::asio::buffer(read_msg_.data(), chat_message::header_length),
-        //                         boost::bind(
-        //                             &chat_session::handle_read_header, shared_from_this(),
-        //                             boost::asio::placeholders::error));
         this->socket_->async_read_some(boost::asio::buffer(read_msg_.data(), chat_message::header_length),
                                     boost::bind(
                                     &chat_session::handle_read_header, shared_from_this(),
@@ -101,11 +96,6 @@ public:
         write_msgs_.push_back(msg);
         if (!write_in_progress)
         {
-            // boost::asio::async_write(socket_,
-            //                          boost::asio::buffer(write_msgs_.front().data(),
-            //                                              write_msgs_.front().length()),
-            //                          boost::bind(&chat_session::handle_write, shared_from_this(),
-            //                                      boost::asio::placeholders::error));
             this->socket_->async_write_some(boost::asio::buffer(write_msgs_.front().data(),
                                             write_msgs_.front().length()),
                                             boost::bind(&chat_session::handle_write, shared_from_this(),
@@ -117,11 +107,6 @@ public:
     {
         if (!error && read_msg_.decode_header())
         {
-            // in this calling,return immediately
-            // boost::asio::async_read(socket_,
-            //                         boost::asio::buffer(read_msg_.body(), read_msg_.body_length()),
-            //                         boost::bind(&chat_session::handle_read_body, shared_from_this(),
-            //                                     boost::asio::placeholders::error));
             this->socket_->async_read_some(boost::asio::buffer(read_msg_.body(), read_msg_.body_length()),
                                            boost::bind(&chat_session::handle_read_body, shared_from_this(),
                                            boost::asio::placeholders::error));
@@ -137,11 +122,6 @@ public:
         if (!error)
         {
             room_.deliver(read_msg_);
-            // in this calling,return immediately
-            // boost::asio::async_read(socket_,
-            //                         boost::asio::buffer(read_msg_.data(), chat_message::header_length),
-            //                         boost::bind(&chat_session::handle_read_header, shared_from_this(),
-            //                                     boost::asio::placeholders::error));
             this->socket_->async_read_some(boost::asio::buffer(read_msg_.data(), chat_message::header_length),
                                            boost::bind(&chat_session::handle_read_header, shared_from_this(),
                                            boost::asio::placeholders::error));
@@ -159,12 +139,6 @@ public:
             write_msgs_.pop_front();
             if (!write_msgs_.empty())
             {
-                // in this calling,return immediately
-                // boost::asio::async_write(socket_,
-                //                          boost::asio::buffer(write_msgs_.front().data(),
-                //                                              write_msgs_.front().length()),
-                //                          boost::bind(&chat_session::handle_write, shared_from_this(),
-                //                                      boost::asio::placeholders::error));
                 this->socket_->async_write_some(boost::asio::buffer(write_msgs_.front().data(),
                                                 write_msgs_.front().length()),
                                                 boost::bind(&chat_session::handle_write, shared_from_this(),

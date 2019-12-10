@@ -256,7 +256,9 @@ public:
         }
         else if (command.compare("Chat") == 0 && this->status == 1)
         {
-            // info_res format.
+            // info_res format
+            // format: "Chat [ChatRoom] [UserName] [Info]"
+            auto info_res = retriveData(content, 3);
             // chat
         }
         else
