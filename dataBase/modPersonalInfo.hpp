@@ -7,7 +7,11 @@
 
 using namespace std;
 
+<<<<<<< HEAD
 int modifyPersonalInformation(const wstring &uid, const wstring &uname, const wstring &upassword)
+=======
+int modifyPersonalInformation(wstring uid, wstring uname, wstring upassword)
+>>>>>>> CRS_Project_Mod
 {
 	/*
 	if true,return 1

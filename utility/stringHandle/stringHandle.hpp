@@ -4,7 +4,11 @@
 #include <cstdlib>
 #include <cstring>
 
+<<<<<<< HEAD
 std::string getNextKey(const std::string &srcString)
+=======
+std::string getNextKey(std::string srcString)
+>>>>>>> CRS_Project_Mod
 {
     // this function is used to id+1
     char *id = new char[32];

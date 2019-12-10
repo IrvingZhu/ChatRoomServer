@@ -7,9 +7,14 @@
 
 using namespace std;
 
+<<<<<<< HEAD
 int createChatRoom(const wstring &ChatID, const wstring &ChatName)
 {
 	/*
+=======
+int createChatRoom(wstring ChatID,wstring ChatName){
+    /*
+>>>>>>> CRS_Project_Mod
 	if true,return 1
 	error return 0
 	*/
@@ -29,7 +34,11 @@ int createChatRoom(const wstring &ChatID, const wstring &ChatName)
 
 	con = mysql_init((MYSQL *)0); //connect
 
+<<<<<<< HEAD
 	if (con != NULL && mysql_real_connect(con, dbip, dbuser, dbpasswd, dbname, 3306, NULL, 0))
+=======
+    if (con != NULL && mysql_real_connect(con, dbip, dbuser, dbpasswd, dbname, 3306, NULL, 0))
+>>>>>>> CRS_Project_Mod
 	{ // connect
 		if (!mysql_select_db(con, dbname))
 		{
@@ -37,7 +46,11 @@ int createChatRoom(const wstring &ChatID, const wstring &ChatName)
 				 << endl;
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set code format
+<<<<<<< HEAD
 			swprintf(wquery, L"insert into chatroomset values('%s','%s')", ChatID.c_str(), ChatName.c_str());
+=======
+			swprintf(wquery, L"insert into chatroomset values('%s','%s')", ChatID.c_str(),ChatName.c_str());
+>>>>>>> CRS_Project_Mod
 			char *query;
 			convertToNarrowChars(wquery, query);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
@@ -47,9 +60,15 @@ int createChatRoom(const wstring &ChatID, const wstring &ChatName)
 				return 0;
 			}
 			else
+<<<<<<< HEAD
 			{ // success
 				cout << "Success " << query << endl;
 				return 1;
+=======
+			{   // success
+				cout << "Success " << query << endl;
+                return 1;
+>>>>>>> CRS_Project_Mod
 			}
 		}
 		else
