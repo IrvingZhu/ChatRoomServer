@@ -34,7 +34,8 @@ class server
 private:
     boost::asio::io_service &ios;
     boost::asio::ip::tcp::acceptor acceptor;
-    string comBuffer;
+    // string comBuffer;
+    char *comBuffer;
     chat_server_map servers;
     int status;
     // if status is 0,short connecting.
@@ -44,12 +45,15 @@ public:
     explicit server(boost::asio::io_service &io) : ios(io),
                                                    acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8888)),
                                                    status(0),
-                                                   comBuffer("")
+                                                   comBuffer(new char[2048])
     {
+        memset(this->comBuffer, 0, strlen(comBuffer));
         start();
     }
 
-    ~server() {}
+    ~server() {
+        delete[] comBuffer;
+    }
 
     void start()
     {
