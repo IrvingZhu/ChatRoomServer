@@ -256,7 +256,7 @@ public:
         }
         else if (command.compare("Chat") == 0 && this->status == 1)
         {
-            //
+            // info_res format
             // chat
         }
         else
