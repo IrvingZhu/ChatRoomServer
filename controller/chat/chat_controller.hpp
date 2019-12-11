@@ -49,8 +49,10 @@ public:
         while (recent_msgs_.size() > max_recent_msgs)
             recent_msgs_.pop_front();
 
-        std::for_each(participants_.begin(), participants_.end(),
-                      boost::bind(&chat_participant::deliver, _1, boost::ref(msg)));
+        for (auto iter = participants_.begin(); iter != participants_.end(); iter++)
+        {
+            boost::bind(&chat_participant::deliver, _1, boost::ref(msg));
+        }
     }
 
     chat_participant_ptr findSession(string UserName)
