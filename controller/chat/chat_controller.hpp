@@ -36,7 +36,7 @@ public:
                       boost::bind(&chat_participant::deliver, participant, _1));
     }
 
-    void leave(std::string UserName, chat_participant_ptr participant)
+    void leave(std::string UserName)
     {
         auto iter = participants_.find(UserName);
         participants_.erase(iter);
@@ -123,7 +123,7 @@ public:
         else
         {
 
-            room_.leave(this->UName, std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
+            room_.leave(this->UName);
         }
     }
 
@@ -160,6 +160,10 @@ public:
 
         auto participant = std::dynamic_pointer_cast<chat_session>(room_.findSession(UserName));
         participant->deliver(send_info);
+    }
+
+    void leave(string UserName){
+        room_.leave(UserName);
     }
 
 private:
