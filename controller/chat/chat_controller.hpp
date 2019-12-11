@@ -53,12 +53,13 @@ public:
                       boost::bind(&chat_participant::deliver, _1, boost::ref(msg)));
     }
 
-    chat_participant_ptr findSession(string UserName){
+    chat_participant_ptr findSession(string UserName)
+    {
         return participants_.find(UserName)->second;
     }
 
 private:
-    std::map<std::string, chat_participant_ptr> participants_;// has some participants.
+    std::map<std::string, chat_participant_ptr> participants_; // has some participants.
     enum
     {
         max_recent_msgs = 100
@@ -71,9 +72,10 @@ class chat_session
       public std::enable_shared_from_this<chat_session>
 {
 public:
-    chat_session(std::shared_ptr<boost::asio::ip::tcp::socket> &socket, chat_room &room,const std::string &UserName)
+    chat_session(std::shared_ptr<boost::asio::ip::tcp::socket> &socket, chat_room &room, const std::string &UserName)
         : socket_(socket),
-          room_(room)
+          room_(room),
+          UName(UserName)
     {
         this->start(UserName);
     }
@@ -86,12 +88,7 @@ public:
     void start(const std::string &UserName)
     {
         // begin start,receive the message.
-
         room_.join(UserName, std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
-        this->socket_->async_read_some(boost::asio::buffer(read_msg_.data(), chat_message::header_length),
-                                       boost::bind(
-                                           &chat_session::handle_read_header, shared_from_this(),
-                                           boost::asio::placeholders::error));
     }
 
     void deliver(const chat_message &msg)
@@ -105,35 +102,6 @@ public:
                                                                 write_msgs_.front().length()),
                                             boost::bind(&chat_session::handle_write, shared_from_this(),
                                                         boost::asio::placeholders::error));
-        }
-    }
-
-    void handle_read_header(const boost::system::error_code &error)
-    {
-        if (!error && read_msg_.decode_header())
-        {
-            this->socket_->async_read_some(boost::asio::buffer(read_msg_.body(), read_msg_.body_length()),
-                                           boost::bind(&chat_session::handle_read_body, shared_from_this(),
-                                                       boost::asio::placeholders::error));
-        }
-        else
-        {
-            room_.leave(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
-        }
-    }
-
-    void handle_read_body(const boost::system::error_code &error)
-    {
-        if (!error)
-        {
-            room_.deliver(read_msg_);
-            this->socket_->async_read_some(boost::asio::buffer(read_msg_.data(), chat_message::header_length),
-                                           boost::bind(&chat_session::handle_read_header, shared_from_this(),
-                                                       boost::asio::placeholders::error));
-        }
-        else
-        {
-            room_.leave(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
         }
     }
 
@@ -152,14 +120,15 @@ public:
         }
         else
         {
-            room_.leave(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
+
+            room_.leave(this->UName, std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
         }
     }
 
 private:
     std::shared_ptr<boost::asio::ip::tcp::socket> &socket_;
-    chat_room &room_;// only this room,belong to room
-    chat_message read_msg_;
+    chat_room &room_; // only this room,belong to room
+    std::string UName;
     chat_message_queue write_msgs_;
 };
 
@@ -179,7 +148,8 @@ public:
         chat_session_ptr new_session(new chat_session(this->sock_, room_, UserName));
     }
 
-    void send(string UserName,string Info){
+    void send(string UserName, string Info)
+    {
         chat_message send_info;
         auto p_info = Info.c_str();
         send_info.encode_user(UserName);
@@ -192,7 +162,7 @@ public:
 
 private:
     std::shared_ptr<boost::asio::ip::tcp::socket> &sock_;
-    chat_room room_;// server has room
+    chat_room room_; // server has room
 };
 
 typedef std::shared_ptr<chat_server> chat_server_ptr;

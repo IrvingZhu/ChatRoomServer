@@ -252,7 +252,8 @@ public:
             // format is "AccessChatRoom [UserName] [ChatName]"
             auto info_res = retriveData(content, 2);
             auto iter = servers.find(info_res[1]);
-            if(iter == servers.end()){
+            if (iter == servers.end())
+            {
                 sock->async_write_some(boost::asio::buffer("NotFindRoom"), boost::bind(&server::start, this));
             }
             chat_server_ptr server(new chat_server(sock, info_res[0]));
@@ -270,7 +271,7 @@ public:
             auto this_server = iter->second;
             auto chat_content = info_res[2].c_str();
             // size jduge is client things
-            this_server->send(info_res[1],info_res[2]);
+            this_server->send(info_res[1], info_res[2]);
             // 2019.12.10
         }
         else
