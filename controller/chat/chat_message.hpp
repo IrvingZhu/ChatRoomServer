@@ -1,8 +1,10 @@
 #pragma once
 
+#include <iostream>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
 
 // information 
 // body+header
@@ -11,10 +13,12 @@ class chat_message
 {
     public:
         enum { header_length = 4 };
-        enum { max_body_length = 512 };
+        enum { max_user_length = 32 };
+        enum { max_body_length = 1024 };
 
         chat_message()
-            : body_length_(0)
+            : body_length_(0),
+              user_length_(0)
         {
         }
 
@@ -30,17 +34,17 @@ class chat_message
 
         size_t length() const
         {
-            return header_length + body_length_;
+            return header_length + user_length_ + body_length_;
         }
 
         const char* body() const
         {
-            return data_ + header_length;
+            return data_ + header_length + user_length_;
         }
 
         char* body()
         {
-            return data_ + header_length;
+            return data_ + header_length + user_length_;
         }
 
         size_t body_length() const
@@ -77,9 +81,19 @@ class chat_message
             memcpy(data_, header, header_length);
         }
 
+        bool encode_user(string username){
+            if(username.length() >= max_user_length){
+                return false;
+            }
+            auto p_user = username.c_str();
+            strcpy(data_+header_length, p_user);
+            return true;
+        }
+
     private:
-        char data_[header_length + max_body_length];
+        char data_[header_length + max_user_length + max_body_length];
         size_t body_length_;// length of data
+        size_t user_length_;
         // in this message format,header is length of
         // information.
 };

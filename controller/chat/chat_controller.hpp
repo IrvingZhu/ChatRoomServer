@@ -54,7 +54,7 @@ public:
     }
 
     chat_participant_ptr findSession(string UserName){
-        
+        return participants_.find(UserName)->second;
     }
 
 private:
@@ -71,11 +71,11 @@ class chat_session
       public std::enable_shared_from_this<chat_session>
 {
 public:
-    chat_session(std::shared_ptr<boost::asio::ip::tcp::socket> &socket, chat_room &room, std::string UserName)
+    chat_session(std::shared_ptr<boost::asio::ip::tcp::socket> &socket, chat_room &room,const std::string &UserName)
         : socket_(socket),
           room_(room)
     {
-        this->start();
+        this->start(UserName);
     }
 
     std::shared_ptr<boost::asio::ip::tcp::socket> &socket()
@@ -83,11 +83,11 @@ public:
         return socket_;
     }
 
-    void start()
+    void start(const std::string &UserName)
     {
         // begin start,receive the message.
-        room_
-        room_.join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
+
+        room_.join(UserName, std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
         this->socket_->async_read_some(boost::asio::buffer(read_msg_.data(), chat_message::header_length),
                                        boost::bind(
                                            &chat_session::handle_read_header, shared_from_this(),
@@ -180,8 +180,14 @@ public:
     }
 
     void send(string UserName,string Info){
-        auto p_ptr = this->room_.findSession(UserName);
-        p_ptr->deliver();
+        chat_message send_info;
+        auto p_info = Info.c_str();
+        send_info.encode_user(UserName);
+        auto sp_info = send_info.body();
+        strcpy(sp_info, p_info); //construct the send_info.
+
+        auto participant = std::dynamic_pointer_cast<chat_session>(room_.findSession(UserName));
+        participant->deliver(send_info);
     }
 
 private:

@@ -16,6 +16,7 @@
 #include "../utility/convert/convert.hpp"
 #include "../utility/stringHandle/stringHandle.hpp"
 #include "./chat/chat_controller.hpp"
+#include "./chat/chat_message.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -24,7 +25,7 @@
 
 using namespace std;
 
-int login_info = 2, register_info = 3, modify_info = 3, create_info = 2, join_info = 2;
+int login_info = 2, register_info = 3, modify_info = 3, create_info = 3, join_info = 3;
 
 typedef std::shared_ptr<boost::asio::ip::tcp::socket> sock_ptr;
 
@@ -159,10 +160,11 @@ public:
         }
         else if (command.compare("CreateChatRoom") == 0)
         {
-            // format is "Create [UID] [RoomName]"
+            // format is "Create [UID] [UName] [RoomName]"
             auto info_res = retriveData(content, create_info);
             wstring uid(convertToWString(info_res[0]));
-            wstring roomname(convertToWString(info_res[1]));
+            wstring uname(convertToWString(info_res[1]));
+            wstring roomname(convertToWString(info_res[2]));
 
             // first,query rela table to find last id.
             wchar_t *rela_query = new wchar_t[64];
@@ -190,7 +192,7 @@ public:
             {
                 // create success and join in.
                 sock->async_write_some(boost::asio::buffer("SuccessCre"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
-                chat_server_ptr server(new chat_server(sock));
+                chat_server_ptr server(new chat_server(sock, convertToString(uname)));
                 servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                 this->status = 1; //chat begin.
             }
@@ -202,10 +204,11 @@ public:
         // long connect part
         else if (command.compare("JoinNewChatRoom") == 0)
         {
-            // format is "JoinNewChatRoom [UID] [ChatName]"
+            // format is "JoinNewChatRoom [UID] [Uname] [ChatName]"
             auto info_res = retriveData(content, join_info);
             wstring UID(convertToWString(info_res[0]));
-            wstring ChatName(convertToWString(info_res[1]));
+            wstring UName(convertToWString(info_res[1]));
+            wstring ChatName(convertToWString(info_res[2]));
 
             wchar_t *wquery = new wchar_t[64];
             memset(wquery, 0, wcslen(wquery));
@@ -230,7 +233,7 @@ public:
                 if (cre_res == 1)
                 {
                     sock->async_write_some(boost::asio::buffer("SuccessJoin"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
-                    chat_server_ptr server(new chat_server(sock));
+                    chat_server_ptr server(new chat_server(sock, convertToString(UName)));
                     servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                     this->status = 1;
                 }
@@ -261,9 +264,12 @@ public:
         {
             // info_res format
             // format: "Chat [ChatRoom] [UserName] [Info]"
+            // [Info] = 4 byte length info + 32 byte of chat userName + 1024 byte of chat words.
             auto info_res = retriveData(content, 3);
             auto iter = servers.find(info_res[0]); // chat room name
             auto this_server = iter->second;
+            auto chat_content = info_res[2].c_str();
+            // size jduge is client things
             this_server->send(info_res[1],info_res[2]);
             // 2019.12.10
         }
