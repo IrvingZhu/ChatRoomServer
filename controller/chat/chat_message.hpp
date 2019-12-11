@@ -10,7 +10,7 @@
 class chat_message
 {
     public:
-        enum { header_length = 32 };
+        enum { header_length = 4 };
         enum { max_body_length = 512 };
 
         chat_message()
@@ -79,5 +79,7 @@ class chat_message
 
     private:
         char data_[header_length + max_body_length];
-        size_t body_length_;
+        size_t body_length_;// length of data
+        // in this message format,header is length of
+        // information.
 };

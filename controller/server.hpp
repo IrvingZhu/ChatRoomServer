@@ -246,10 +246,13 @@ public:
         }
         else if (command.compare("AccessChatRoom") == 0)
         {
-            // format is "AccessChatRoom [ChatName]"
-            auto info_res = retriveData(content, 1);
-            auto iter = servers.find(info_res[0]);
-            chat_server_ptr server(new chat_server(sock));
+            // format is "AccessChatRoom [UserName] [ChatName]"
+            auto info_res = retriveData(content, 2);
+            auto iter = servers.find(info_res[1]);
+            if(iter == servers.end()){
+                sock->async_write_some(boost::asio::buffer("NotFindRoom"), boost::bind(&server::start, this));
+            }
+            chat_server_ptr server(new chat_server(sock, info_res[0]));
             servers.insert(pair<string, chat_server_ptr>(iter->first, server));
             sock->async_write_some(boost::asio::buffer("SuccessAccess"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
             this->status = 1;
@@ -259,7 +262,10 @@ public:
             // info_res format
             // format: "Chat [ChatRoom] [UserName] [Info]"
             auto info_res = retriveData(content, 3);
-            // chat
+            auto iter = servers.find(info_res[0]); // chat room name
+            auto this_server = iter->second;
+            this_server->send(info_res[1],info_res[2]);
+            // 2019.12.10
         }
         else
         {
