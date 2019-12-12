@@ -42,10 +42,10 @@ private:
 
 public:
     explicit server(boost::asio::io_service &io) : ios(io),
-                                                   acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8888))
+                                                   acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8888)),
+                                                   status(0)
     {
         start();
-        this->status = 0;
     }
 
     ~server() {}
@@ -195,6 +195,7 @@ public:
                 chat_server_ptr server(new chat_server(sock, convertToString(uname)));
                 servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                 this->status = 1; //chat begin.
+                this->start();
             }
             else
             {
@@ -236,6 +237,7 @@ public:
                     chat_server_ptr server(new chat_server(sock, convertToString(UName)));
                     servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                     this->status = 1;
+                    this->start();
                 }
                 else
                 {
@@ -260,6 +262,7 @@ public:
             servers.insert(pair<string, chat_server_ptr>(iter->first, server));
             sock->async_write_some(boost::asio::buffer("SuccessAccess"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
             this->status = 1;
+            this->start();
         }
         else if (command.compare("Chat") == 0 && this->status == 1)
         {
@@ -274,6 +277,7 @@ public:
             this_server->send(info_res[1], info_res[2]);
 
             // have not send some infomation to client,because it is chat status.
+            this->start();
         }
         else if (command.compare("Leave") == 0 && this->status == 1)
         {
