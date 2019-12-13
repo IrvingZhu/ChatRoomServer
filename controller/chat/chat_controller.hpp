@@ -28,7 +28,7 @@ typedef std::shared_ptr<chat_participant> chat_participant_ptr;
 class chat_room
 {
 public:
-    void join(std::string UserName, chat_participant_ptr participant)
+    void join(const std::string &UserName, chat_participant_ptr participant)
     {
         // for this part,participant will join the chatroom queue
         participants_.insert(std::pair<std::string, chat_participant_ptr>(UserName, participant));
@@ -36,7 +36,7 @@ public:
                       boost::bind(&chat_participant::deliver, participant, _1));
     }
 
-    void leave(std::string UserName)
+    void leave(const std::string &UserName)
     {
         auto iter = participants_.find(UserName);
         participants_.erase(iter);
@@ -55,7 +55,7 @@ public:
         }
     }
 
-    chat_participant_ptr findSession(string UserName)
+    chat_participant_ptr findSession(const string &UserName)
     {
         return participants_.find(UserName)->second;
     }
@@ -139,18 +139,18 @@ typedef std::shared_ptr<chat_session> chat_session_ptr;
 class chat_server
 {
 public:
-    chat_server(std::shared_ptr<boost::asio::ip::tcp::socket> &sock, std::string UserName)
+    chat_server(std::shared_ptr<boost::asio::ip::tcp::socket> &sock, const std::string &UserName)
         : sock_(sock)
     {
         start_chat(UserName);
     }
 
-    void start_chat(std::string UserName) // if you want to add a room of session,you can use this function.
+    void start_chat(const std::string &UserName) // if you want to add a room of session,you can use this function.
     {
         chat_session_ptr new_session(new chat_session(this->sock_, room_, UserName));
     }
 
-    void send(string UserName, string Info)
+    void send(const string &UserName, const string &Info)
     {
         chat_message send_info;
         auto p_info = Info.c_str();
@@ -162,7 +162,8 @@ public:
         participant->deliver(send_info);
     }
 
-    void leave(string UserName){
+    void leave(const string &UserName)
+    {
         room_.leave(UserName);
     }
 

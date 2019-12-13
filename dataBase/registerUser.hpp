@@ -7,7 +7,7 @@
 
 using namespace std;
 
-int registerUser(wstring uid, wstring uname, wstring upassword1)
+int registerUser(const wstring &uid, const wstring &uname, const wstring &upassword1)
 {
 	/*
 	if true,return 1

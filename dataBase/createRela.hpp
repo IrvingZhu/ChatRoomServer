@@ -7,7 +7,7 @@
 
 using namespace std;
 
-int createRela(wstring ID, wstring UID, wstring ChatID)
+int createRela(const wstring &ID, const wstring &UID, const wstring &ChatID)
 {
     /*
 	if true,return 1

@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 
-std::string getNextKey(std::string srcString)
+std::string getNextKey(const std::string &srcString)
 {
     // this function is used to id+1
     char *id = new char[32];

@@ -7,7 +7,7 @@
 
 using namespace std;
 
-int searchLogin(wstring uname, wstring upassword)
+int searchLogin(const wstring &uname, const wstring &upassword)
 {
 	/*
 	if true,return 1

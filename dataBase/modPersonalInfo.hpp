@@ -7,7 +7,7 @@
 
 using namespace std;
 
-int modifyPersonalInformation(wstring uid, wstring uname, wstring upassword)
+int modifyPersonalInformation(const wstring &uid, const wstring &uname, const wstring &upassword)
 {
 	/*
 	if true,return 1

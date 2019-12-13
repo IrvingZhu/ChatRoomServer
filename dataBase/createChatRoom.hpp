@@ -7,8 +7,9 @@
 
 using namespace std;
 
-int createChatRoom(wstring ChatID,wstring ChatName){
-    /*
+int createChatRoom(const wstring &ChatID, const wstring &ChatName)
+{
+	/*
 	if true,return 1
 	error return 0
 	*/
@@ -28,7 +29,7 @@ int createChatRoom(wstring ChatID,wstring ChatName){
 
 	con = mysql_init((MYSQL *)0); //connect
 
-    if (con != NULL && mysql_real_connect(con, dbip, dbuser, dbpasswd, dbname, 3306, NULL, 0))
+	if (con != NULL && mysql_real_connect(con, dbip, dbuser, dbpasswd, dbname, 3306, NULL, 0))
 	{ // connect
 		if (!mysql_select_db(con, dbname))
 		{
@@ -36,7 +37,7 @@ int createChatRoom(wstring ChatID,wstring ChatName){
 				 << endl;
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set code format
-			swprintf(wquery, L"insert into chatroomset values('%s','%s')", ChatID.c_str(),ChatName.c_str());
+			swprintf(wquery, L"insert into chatroomset values('%s','%s')", ChatID.c_str(), ChatName.c_str());
 			char *query;
 			convertToNarrowChars(wquery, query);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
@@ -46,9 +47,9 @@ int createChatRoom(wstring ChatID,wstring ChatName){
 				return 0;
 			}
 			else
-			{   // success
+			{ // success
 				cout << "Success " << query << endl;
-                return 1;
+				return 1;
 			}
 		}
 		else
