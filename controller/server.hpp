@@ -73,7 +73,11 @@ public:
     {
         int init_pos = 0;
         auto posi = this->comBuffer.find(" ");
-        cout << "the blank position in the:" << posi <<endl; // has no problem 2019.12.18
+        cout << "the blank position in the:" << posi << endl; // has no problem 2019.12.18
+        if (posi > 1024)
+        {
+            sock->async_write_some(boost::asio::buffer("InfoError"), boost::bind(&server::start, this));
+        }
         auto command = this->comBuffer.substr(init_pos, posi - init_pos);
         auto content = this->comBuffer.substr(posi);
 
