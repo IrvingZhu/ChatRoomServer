@@ -59,17 +59,21 @@ public:
     void accept_handler(const boost::system::error_code &ec, sock_ptr sock)
     {
         if (ec)
+        {
+            cout << ec.message() << '\n';
             return;
+        }
         cout << "client: ";
         cout << sock->remote_endpoint().address() << endl;
         sock->async_read_some(boost::asio::buffer(comBuffer), boost::bind(&server::read_handler, this, boost::asio::placeholders::error, sock));
         start(); //retry to accept the next quest ......
     }
 
-    void read_handler(const boost::system::error_code &, sock_ptr sock)
+    void read_handler(const boost::system::error_code &ec, sock_ptr sock)
     {
         int init_pos = 0;
         auto posi = this->comBuffer.find(" ");
+        cout << "the blank position in the:" << posi <<endl; // has no problem 2019.12.18
         auto command = this->comBuffer.substr(init_pos, posi - init_pos);
         auto content = this->comBuffer.substr(posi);
 
