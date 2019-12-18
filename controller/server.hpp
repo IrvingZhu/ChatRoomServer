@@ -43,7 +43,8 @@ private:
 public:
     explicit server(boost::asio::io_service &io) : ios(io),
                                                    acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8888)),
-                                                   status(0)
+                                                   status(0),
+                                                   comBuffer("")
     {
         start();
     }
@@ -72,6 +73,7 @@ public:
     void read_handler(const boost::system::error_code &ec, sock_ptr sock)
     {
         int init_pos = 0;
+        cout << "command Buffer content is :" << this->comBuffer << '\n';
         auto posi = this->comBuffer.find(" ");
         cout << "the blank position in the:" << posi << endl; // has no problem 2019.12.18
         if (posi > 1024)
