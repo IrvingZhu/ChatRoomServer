@@ -7,11 +7,7 @@
 
 using namespace std;
 
-<<<<<<< HEAD
 int createRela(const wstring &ID, const wstring &UID, const wstring &ChatID)
-=======
-int createRela(wstring ID, wstring UID, wstring ChatID)
->>>>>>> CRS_Project_Mod
 {
     /*
 	if true,return 1

@@ -83,11 +83,7 @@ vector<char *> searchAllOfChatRoom(const wstring &ChatID)
 	}
 }
 
-<<<<<<< HEAD
 vector<char *> searchAllOfRela(const wstring &PID, const wstring &CID)
-=======
-vector<char *> searchAllOfRela(wstring PID, wstring CID)
->>>>>>> CRS_Project_Mod
 {
 	vector<char *> result;
 	result.resize(Rela_num);
@@ -155,11 +151,7 @@ vector<char *> searchAllOfRela(wstring PID, wstring CID)
 	}
 }
 
-<<<<<<< HEAD
 vector<char *> searchAllOfPeople(const wstring &Search_info, int type)
-=======
-vector<char *> searchAllOfPeople(wstring Search_info, int type)
->>>>>>> CRS_Project_Mod
 {
 	// uid 0
 	// uname 1

@@ -7,11 +7,7 @@
 
 using namespace std;
 
-<<<<<<< HEAD
 int registerUser(const wstring &uid, const wstring &uname, const wstring &upassword1)
-=======
-int registerUser(wstring uid, wstring uname, wstring upassword1)
->>>>>>> CRS_Project_Mod
 {
 	/*
 	if true,return 1

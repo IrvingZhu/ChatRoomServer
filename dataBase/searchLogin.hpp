@@ -7,11 +7,7 @@
 
 using namespace std;
 
-<<<<<<< HEAD
 int searchLogin(const wstring &uname, const wstring &upassword)
-=======
-int searchLogin(wstring uname, wstring upassword)
->>>>>>> CRS_Project_Mod
 {
 	/*
 	if true,return 1

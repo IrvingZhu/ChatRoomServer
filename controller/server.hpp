@@ -35,7 +35,7 @@ private:
     boost::asio::io_service &ios;
     boost::asio::ip::tcp::acceptor acceptor;
     // string comBuffer;
-    char *comBuffer;
+    char buffer[2048];
     chat_server_map servers;
     int status;
     // if status is 0,short connecting.
@@ -44,15 +44,14 @@ private:
 public:
     explicit server(boost::asio::io_service &io) : ios(io),
                                                    acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8888)),
-                                                   status(0),
-                                                   comBuffer(new char[2048])
+                                                   status(0)
     {
-        memset(this->comBuffer, 0, strlen(comBuffer));
+        memset(this->buffer, 0, strlen(buffer));
         start();
     }
 
     ~server() {
-        delete[] comBuffer;
+        delete[] buffer;
     }
 
     void start()
@@ -70,23 +69,24 @@ public:
         }
         cout << "client: ";
         cout << sock->remote_endpoint().address() << endl;
-        sock->async_read_some(boost::asio::buffer(comBuffer), boost::bind(&server::read_handler, this, boost::asio::placeholders::error, sock));
+        sock->async_read_some(boost::asio::buffer(this->buffer), boost::bind(&server::read_handler, this, boost::asio::placeholders::error, sock));
         start(); //retry to accept the next quest ......
     }
 
     void read_handler(const boost::system::error_code &ec, sock_ptr sock)
     {
         int init_pos = 0;
-        cout << "command Buffer content is :" << this->comBuffer << '\n';
-        auto posi = this->comBuffer.find(" ");
+        std::string comBuffer(this->buffer);
+        cout << "command Buffer content is :" << comBuffer << '\n';
+        auto posi = comBuffer.find(" ");
         cout << "the blank position in the:" << posi << endl; // has no problem 2019.12.18
         if (posi > 1024)
         {
             sock->async_write_some(boost::asio::buffer("InfoError"), boost::bind(&server::start, this));
             return;
         }
-        auto command = this->comBuffer.substr(init_pos, posi - init_pos);
-        auto content = this->comBuffer.substr(posi);
+        auto command = comBuffer.substr(init_pos, posi - init_pos);
+        auto content = comBuffer.substr(posi);
 
         // for all,if return integer,true is return 1,false is 0
 
