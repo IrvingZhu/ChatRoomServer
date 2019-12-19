@@ -38,7 +38,7 @@ int createRela(const wstring &ID, const wstring &UID, const wstring &ChatID)
             con->reconnect = 1;
             mysql_query(con, "SET NAMES GBK"); // set code format
             swprintf(wquery, L"insert into peo_chat_r values('%s', '%s','%s')", ID.c_str(), UID.c_str(), ChatID.c_str());
-            char *query;
+            char *query = nullptr;
             convertToNarrowChars(wquery, query);
             rt = mysql_real_query(con, query, strlen(query)); // qurey result
             if (rt)

@@ -38,7 +38,7 @@ int createChatRoom(const wstring &ChatID, const wstring &ChatName)
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set code format
 			swprintf(wquery, L"insert into chatroomset values('%s','%s')", ChatID.c_str(), ChatName.c_str());
-			char *query;
+			char *query = nullptr;
 			convertToNarrowChars(wquery, query);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
 			if (rt)

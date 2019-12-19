@@ -38,7 +38,7 @@ int registerUser(const wstring &uid, const wstring &uname, const wstring &upassw
 				 << endl;
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set the code
-			char *query;
+			char *query = nullptr;
 			swprintf(wquery, L"insert into people values('%s','%s','%s')", uid.c_str(), uname.c_str(), upassword1.c_str());
 			convertToNarrowChars(wquery, query);
 			rt = mysql_real_query(con, query, strlen(query));

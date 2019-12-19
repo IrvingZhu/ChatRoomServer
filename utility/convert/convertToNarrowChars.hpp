@@ -6,7 +6,7 @@ int convertToNarrowChars(wchar_t *preChars, char *&afterChars)
 {
 	std::wstring srcChars(preChars);
 	auto res = convertToString(srcChars);
-	if (strlen(afterChars) == 0)
+	if (afterChars == nullptr)
 	{
 		afterChars = new char[128];
 		memset(afterChars, 0, strlen(afterChars));

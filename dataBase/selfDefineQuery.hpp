@@ -38,7 +38,7 @@ std::vector<std::string> selfDefineQuery(const wchar_t *wquery, int ret_record, 
                       << std::endl;
             con->reconnect = 1;
             mysql_query(con, "SET NAMES GBK"); // set code format
-            char *query;
+            char *query = nullptr;
             convertToNarrowChars(mwquery, query);
             rt = mysql_real_query(con, query, strlen(query)); // qurey result
             if (rt)

@@ -41,7 +41,7 @@ int searchLogin(const wstring &uname, const wstring &upassword)
 			// wchar_t *name = new wchar_t[64];
 			// wcscpy(name, uname.c_str());
 			swprintf(wquery, L"select upassword from people where UNAME = '%s'", uname.c_str());
-			char *query;
+			char *query = nullptr;
 			convertToNarrowChars(wquery, query);
 			rt = mysql_real_query(con, query, strlen(query)); //qurey result
 			if (rt)
