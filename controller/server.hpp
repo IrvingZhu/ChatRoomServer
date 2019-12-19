@@ -50,7 +50,8 @@ public:
         start();
     }
 
-    ~server() {
+    ~server()
+    {
         delete[] buffer;
     }
 
