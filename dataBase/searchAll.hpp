@@ -156,7 +156,6 @@ vector<char *> searchAllOfPeople(const wstring &Search_info, int type)
 	// uid 0
 	// uname 1
 	vector<char *> result;
-	result.resize(peo_table_element_num);
 
 	MYSQL *con;
 	MYSQL_RES *res;
@@ -182,16 +181,21 @@ vector<char *> searchAllOfPeople(const wstring &Search_info, int type)
 				 << endl;
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set code format
-			switch (type)
+			if (type == 0)
 			{
-			case 0: // uid
-				swprintf(wquery, L"select * from people where UID = '%s'", Search_info.c_str());
-				break;
-			case 1: // uname
-				swprintf(wquery, L"select * from people where UNAME = '%s'", Search_info.c_str());
-				break;
-			default:
-				break;
+				// uid
+				wstring s_query(L"select upassword from people where UID = '");
+				wstring symbol(L"'\n");
+				s_query = s_query + Search_info + symbol;
+				// swprintf(wquery, L"select * from people where UID = '%s'", Search_info.c_str());
+			else if (type == 1)
+			{
+				// uname
+				wstring s_query(L"select upassword from people where UNAME = '");
+				wstring symbol(L"'\n");
+				s_query = s_query + Search_info + symbol;
+				// swprintf(wquery, L"select * from people where UNAME = '%s'", Search_info.c_str());
+				wcscpy(wquery, s_query.c_str());
 			}
 			char *query = nullptr;
 			convertToNarrowChars(wquery, query);

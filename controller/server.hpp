@@ -87,7 +87,7 @@ public:
             return;
         }
         auto command = comBuffer.substr(init_pos, posi - init_pos);
-        auto content = comBuffer.substr(posi);
+        auto content = comBuffer.substr(posi + 1);
 
         // for all,if return integer,true is return 1,false is 0
 

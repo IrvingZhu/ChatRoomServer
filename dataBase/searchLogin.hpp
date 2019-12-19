@@ -40,7 +40,11 @@ int searchLogin(const wstring &uname, const wstring &upassword)
 			mysql_query(con, "SET NAMES GBK"); // set code format
 			// wchar_t *name = new wchar_t[64];
 			// wcscpy(name, uname.c_str());
-			swprintf(wquery, L"select upassword from people where UNAME = '%s'", uname.c_str());
+			wstring s_query(L"select upassword from people where UNAME = '");
+			wstring symbol(L"'\n");
+			s_query = s_query + uname + symbol;
+			// swprintf(wquery, L"select upassword from people where UNAME = '%s'\n", uname.c_str());
+			wcscpy(wquery, s_query.c_str());
 			char *query = nullptr;
 			convertToNarrowChars(wquery, query);
 			rt = mysql_real_query(con, query, strlen(query)); //qurey result
@@ -59,11 +63,9 @@ int searchLogin(const wstring &uname, const wstring &upassword)
 				if (!row)
 					return 0;
 
-				string rcomp;
-				rcomp = (char *)row[0];
-				char *srcomp;
+				char *srcomp = nullptr;
 				convertToNarrowChars((wchar_t *)upassword.c_str(), srcomp);
-				if (!strcmp(rcomp.c_str(), srcomp))
+				if (!strcmp(row[0], srcomp))
 					return 1; // successful
 				else
 					return 0;

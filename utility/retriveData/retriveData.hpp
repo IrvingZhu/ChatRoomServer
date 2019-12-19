@@ -10,7 +10,6 @@ vector<string> retriveData(string src, int num)
 {
     int i = 0, start = 0, end = 0;
     vector<string> res;
-    res.resize(num);
     if (num == 0)
     {
         return res;
@@ -25,8 +24,8 @@ vector<string> retriveData(string src, int num)
         auto posi = src.find(" ");
         end = posi;
         res.push_back(src.substr(start, end));
-        src = src.substr(posi);
-        start = end;
+        src = src.substr(posi + 1);
+        start = 0, end = 0;
     }
     return res;
 }
