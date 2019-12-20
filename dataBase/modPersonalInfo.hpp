@@ -38,7 +38,6 @@ int modifyPersonalInformation(const wstring &uid, const wstring &uname, const ws
 				 << endl;
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set the code
-			char *query = nullptr;
 			// swprintf(wquery, L"update people set uid = '%s', uname = '%s', upassword = '%s'", uid.c_str(), uname.c_str(), upassword.c_str());
 			wstring s_query(L"update people set uid = '");
 			wstring s1(L"', uname = '");
@@ -46,7 +45,7 @@ int modifyPersonalInformation(const wstring &uid, const wstring &uname, const ws
 			wstring s3(L"'");
 			s_query = s_query + uid + s1 + uname + s2 + upassword + s3;
 			wcscpy(wquery, s_query.c_str());			
-			convertToNarrowChars(wquery, query);
+			auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query));
 			
 			if (rt)

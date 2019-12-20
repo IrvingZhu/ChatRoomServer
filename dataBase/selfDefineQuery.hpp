@@ -7,7 +7,7 @@
 // #pragma comment(lib, "libmysql.lib")
 #pragma comment(a, "libmysql.a")
 
-std::vector<std::string> selfDefineQuery(const wchar_t *wquery, int ret_record, int para)
+std::vector<std::string> selfDefineQuery(wchar_t *wquery, int ret_record, int para)
 {
     std::vector<std::string> result;
 
@@ -38,8 +38,7 @@ std::vector<std::string> selfDefineQuery(const wchar_t *wquery, int ret_record, 
                       << std::endl;
             con->reconnect = 1;
             mysql_query(con, "SET NAMES GBK"); // set code format
-            char *query = nullptr;
-            convertToNarrowChars(mwquery, query);
+            auto query = convertToNarrowChars(wquery);
             rt = mysql_real_query(con, query, strlen(query)); // qurey result
             if (rt)
             {

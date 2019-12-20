@@ -43,8 +43,7 @@ int createChatRoom(const wstring &ChatID, const wstring &ChatName)
 			wstring symbol_2(L"')");
 			s_query = s_query + ChatID + symbol_1 + ChatName + symbol_2;
 			wcscpy(wquery, s_query.c_str());
-			char *query = nullptr;
-			convertToNarrowChars(wquery, query);
+			auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
 			if (rt)
 			{

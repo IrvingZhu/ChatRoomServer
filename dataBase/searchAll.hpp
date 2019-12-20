@@ -45,8 +45,7 @@ vector<string> searchAllOfChatRoom(const wstring &ChatID)
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set code format
 			swprintf(wquery, L"select * from chatroomset where ChatID = '%s'", ChatID.c_str());
-			char *query = nullptr;
-			convertToNarrowChars(wquery, query);
+			auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
 			if (rt)
 			{
@@ -117,8 +116,7 @@ vector<string> searchAllOfRela(const wstring &PID, const wstring &CID)
 			wstring symbol(L"'\n");
 			s_query = s_query + PID + symbol;
 			wcscpy(wquery, s_query.c_str());
-			char *query = nullptr;
-			convertToNarrowChars(wquery, query);
+			auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
 			if (rt)
 			{
@@ -207,8 +205,7 @@ vector<string> searchAllOfPeople(const wstring &Search_info, int type)
 			else{
 				return result;
 			}
-			char *query = nullptr;
-			convertToNarrowChars(wquery, query);
+			auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
 			if (rt)
 			{

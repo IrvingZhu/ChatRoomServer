@@ -42,8 +42,7 @@ int searchLogin(const wstring &uname, const wstring &upassword)
 			wstring symbol(L"'\n");
 			s_query = s_query + uname + symbol;
 			wcscpy(wquery, s_query.c_str());
-			char *query = nullptr;
-			convertToNarrowChars(wquery, query);
+			auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query)); //qurey result
 			if (rt)
 			{
@@ -62,8 +61,7 @@ int searchLogin(const wstring &uname, const wstring &upassword)
 				if (!row)
 					return 0;
 
-				char *srcomp = nullptr;
-				convertToNarrowChars((wchar_t *)upassword.c_str(), srcomp);
+				auto srcomp = convertToNarrowChars((wchar_t *)upassword.c_str());
 				if (!strcmp(row[0], srcomp))
 				{
 					mysql_free_result(res);

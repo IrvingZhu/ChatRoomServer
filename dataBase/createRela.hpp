@@ -43,8 +43,7 @@ int createRela(const wstring &ID, const wstring &UID, const wstring &ChatID)
 			wstring symbol_2(L"')");
             s_query = s_query + ID + symbol_1 + UID + symbol_1 + ChatID + symbol_2;
             wcscpy(wquery, s_query.c_str());              
-            char *query = nullptr;
-            convertToNarrowChars(wquery, query);
+            auto query = convertToNarrowChars(wquery);
             rt = mysql_real_query(con, query, strlen(query)); // qurey result
             
             if (rt)

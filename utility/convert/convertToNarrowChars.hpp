@@ -2,18 +2,17 @@
 #include "./convert.hpp"
 #include <string>
 
-int convertToNarrowChars(wchar_t *preChars, char *&afterChars)
+char* convertToNarrowChars(wchar_t *preChars)
 {
 	std::wstring srcChars(preChars);
 	auto res = convertToString(srcChars);
-	if (afterChars == nullptr)
-	{
-		afterChars = new char[128];
-		memset(afterChars, 0, strlen(afterChars));
-	}
-	strcpy(afterChars, res.c_str()); // has a fault
+
+	char *afterChars = new char[128];
+	memset(afterChars, 0, strlen(afterChars));
+
+	strcpy(afterChars, res.c_str());
 	if (strlen(afterChars) > 0)
-		return 1;
+		return afterChars;
 	else
-		return 0;
+		return nullptr;
 }
