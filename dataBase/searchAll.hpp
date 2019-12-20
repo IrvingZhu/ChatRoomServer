@@ -151,11 +151,11 @@ vector<char *> searchAllOfRela(const wstring &PID, const wstring &CID)
 	}
 }
 
-vector<char *> searchAllOfPeople(const wstring &Search_info, int type)
+vector<string> searchAllOfPeople(const wstring &Search_info, int type)
 {
 	// uid 0
 	// uname 1
-	vector<char *> result;
+	vector<string> result;
 
 	MYSQL *con;
 	MYSQL_RES *res;
@@ -184,7 +184,7 @@ vector<char *> searchAllOfPeople(const wstring &Search_info, int type)
 			if (type == 0)
 			{
 				// uid
-				wstring s_query(L"select upassword from people where UID = '");
+				wstring s_query(L"select * from people where UID = '");
 				wstring symbol(L"'\n");
 				s_query = s_query + Search_info + symbol;
 				// swprintf(wquery, L"select * from people where UID = '%s'", Search_info.c_str());
@@ -192,7 +192,7 @@ vector<char *> searchAllOfPeople(const wstring &Search_info, int type)
 			else if (type == 1)
 			{
 				// uname
-				wstring s_query(L"select upassword from people where UNAME = '");
+				wstring s_query(L"select * from people where UNAME = '");
 				wstring symbol(L"'\n");
 				s_query = s_query + Search_info + symbol;
 				// swprintf(wquery, L"select * from people where UNAME = '%s'", Search_info.c_str());
@@ -216,11 +216,14 @@ vector<char *> searchAllOfPeople(const wstring &Search_info, int type)
 				res = mysql_store_result(con); // result
 				row = mysql_fetch_row(res);	// row is two dimension array.
 				int i = 0;
+				char *temp_store = new char[64];
+				memset(temp_store, 0, strlen(temp_store));
 				while (i < peo_table_element_num)
 				{
-					result.push_back(row[i]);
+					strcpy(temp_store, row[i]);
+					result.push_back(temp_store);
 					i++;
-					row = mysql_fetch_row(res);
+					// row = mysql_fetch_row(res);
 				}
 				mysql_free_result(res);
 			}
