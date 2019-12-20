@@ -65,11 +65,13 @@ int searchLogin(const wstring &uname, const wstring &upassword)
 				if (!strcmp(row[0], srcomp))
 				{
 					mysql_free_result(res);
+					delete[] srcomp;
 					return 1; // successful
 				}
 				else
 				{
 					mysql_free_result(res);
+					delete[] srcomp;
 					return 0;
 				}
 			}
