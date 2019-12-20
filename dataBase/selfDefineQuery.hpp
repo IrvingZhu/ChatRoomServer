@@ -44,11 +44,13 @@ std::vector<std::string> selfDefineQuery(const wchar_t *wquery, int ret_record, 
             if (rt)
             {
                 std::cout << "ERROR making query: " << mysql_error(con) << " !!!" << std::endl;
+                delete[] query;
                 return result;
             }
             else
             {
                 std::cout << "Success " << query << std::endl;
+                delete[] query;
                 res = new MYSQL_RES;
                 res = mysql_store_result(con); // result
 
