@@ -19,6 +19,7 @@ int ChatRoom_num = 2;
 vector<string> searchAllOfChatRoom(const wstring &ChatID)
 {
 	vector<string> result;
+	
 	MYSQL *con;
 	MYSQL_RES *res;
 	MYSQL_ROW row;

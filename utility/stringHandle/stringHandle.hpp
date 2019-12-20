@@ -19,5 +19,8 @@ std::string getNextKey(const std::string &srcString)
 
     sprintf(char_id, "%lld", num_id);
     std::string result(char_id);
+
+    delete[] char_id;
+    delete[] id;
     return result;                  // id to string and return.
 }

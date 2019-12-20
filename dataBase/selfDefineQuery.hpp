@@ -10,7 +10,6 @@
 std::vector<std::string> selfDefineQuery(const wchar_t *wquery, int ret_record, int para)
 {
     std::vector<std::string> result;
-    result.resize(para);
 
     MYSQL *con;
     MYSQL_RES *res;
@@ -23,6 +22,7 @@ std::vector<std::string> selfDefineQuery(const wchar_t *wquery, int ret_record, 
     wchar_t *mwquery = new wchar_t[256];
     memset(mwquery, 0, wcslen(mwquery));
     wcscpy(mwquery, wquery);
+    delete[] mwquery;
 
     int rt; //return value
 

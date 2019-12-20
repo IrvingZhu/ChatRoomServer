@@ -217,6 +217,9 @@ public:
             {
                 sock->async_write_some(boost::asio::buffer("ErrorCre"), boost::bind(&server::start, this));
             }
+
+            delete[] room_query;
+            delete[] rela_query;
         }
         // long connect part
         else if (command.compare("JoinNewChatRoom") == 0)
@@ -229,7 +232,11 @@ public:
 
             wchar_t *wquery = new wchar_t[64];
             memset(wquery, 0, wcslen(wquery));
-            swprintf(wquery, L"select ChatID from chatroomset where ChatName = '%s'", ChatName.c_str()); // find ChatRoom in database
+            // swprintf(wquery, L"select ChatID from chatroomset where ChatName = '%s'", ChatName.c_str()); // find ChatRoom in database
+			wstring s_query(L"select ChatID from chatroomset where ChatName = '");
+			wstring symbol(L"'\n");
+			s_query = s_query + ChatName + symbol;
+            wcscpy(wquery, s_query.c_str());            
             auto search_res = selfDefineQuery(wquery, 1, 1);
             auto ChatID = convertToWString(search_res[0]); // chatid
 
@@ -259,11 +266,15 @@ public:
                 {
                     sock->async_write_some(boost::asio::buffer("ErrorQuery"), boost::bind(&server::start, this));
                 }
+
+                delete[] rela_query;
             }
             else
             {
                 sock->async_write_some(boost::asio::buffer("ChatRoomNotExist"), boost::bind(&server::start, this));
             }
+
+            delete[] wquery;
         }
         else if (command.compare("AccessChatRoom") == 0)
         {
