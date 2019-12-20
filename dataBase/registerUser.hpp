@@ -47,14 +47,17 @@ int registerUser(const wstring &uid, const wstring &uname, const wstring &upassw
             wcscpy(wquery, s_query.c_str());
 			convertToNarrowChars(wquery, query);
 			rt = mysql_real_query(con, query, strlen(query));
+			
 			if (rt)
 			{ // error
 				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
+				delete[] query;
 				return -2;
 			}
 			else
 			{ //success
 				cout << "successfully insert" << endl;
+				delete[] query;
 				return 1;
 			}
 		}

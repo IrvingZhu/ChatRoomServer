@@ -48,14 +48,17 @@ int modifyPersonalInformation(const wstring &uid, const wstring &uname, const ws
 			wcscpy(wquery, s_query.c_str());			
 			convertToNarrowChars(wquery, query);
 			rt = mysql_real_query(con, query, strlen(query));
+			
 			if (rt)
 			{ // error
 				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
+				delete[] query;
 				return -2;
 			}
 			else
 			{ // success
 				cout << "successfully update" << endl;
+				delete[] query;
 				return 1;
 			}
 		}

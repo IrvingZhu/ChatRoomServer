@@ -49,11 +49,13 @@ int createChatRoom(const wstring &ChatID, const wstring &ChatName)
 			if (rt)
 			{
 				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
+				delete[] query;
 				return 0;
 			}
 			else
 			{ // success
 				cout << "Success " << query << endl;
+				delete[] query;
 				return 1;
 			}
 		}

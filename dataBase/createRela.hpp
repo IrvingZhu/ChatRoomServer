@@ -46,14 +46,17 @@ int createRela(const wstring &ID, const wstring &UID, const wstring &ChatID)
             char *query = nullptr;
             convertToNarrowChars(wquery, query);
             rt = mysql_real_query(con, query, strlen(query)); // qurey result
+            
             if (rt)
             {
                 cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
+                delete[] query;
                 return 0;
             }
             else
             { // success
                 cout << "Success " << query << endl;
+                delete[] query;
                 return 1;
             }
         }
