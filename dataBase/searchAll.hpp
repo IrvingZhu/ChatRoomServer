@@ -16,10 +16,9 @@ int ChatRoom_num = 2;
 // if query true,return a full vector,
 // else return a null set of vector.
 
-vector<char *> searchAllOfChatRoom(const wstring &ChatID)
+vector<string> searchAllOfChatRoom(const wstring &ChatID)
 {
-	vector<char *> result;
-	result.resize(ChatRoom_num);
+	vector<string> result;
 	MYSQL *con;
 	MYSQL_RES *res;
 	MYSQL_ROW row;
@@ -64,7 +63,6 @@ vector<char *> searchAllOfChatRoom(const wstring &ChatID)
 				{
 					result.push_back(row[i]);
 					i++;
-					row = mysql_fetch_row(res);
 				}
 				mysql_free_result(res);
 			}
@@ -83,10 +81,9 @@ vector<char *> searchAllOfChatRoom(const wstring &ChatID)
 	}
 }
 
-vector<char *> searchAllOfRela(const wstring &PID, const wstring &CID)
+vector<string> searchAllOfRela(const wstring &PID, const wstring &CID)
 {
-	vector<char *> result;
-	result.resize(Rela_num);
+	vector<string> result;
 
 	MYSQL *con;
 	MYSQL_RES *res;
@@ -112,7 +109,11 @@ vector<char *> searchAllOfRela(const wstring &PID, const wstring &CID)
 				 << endl;
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set code format
-			swprintf(wquery, L"select * from peo_chat_r where UID = '%s'", PID.c_str());
+			// swprintf(wquery, L"select * from peo_chat_r where UID = '%s'", PID.c_str());
+			wstring s_query(L"select * from peo_chat_r where UID = '");
+			wstring symbol(L"'\n");
+			s_query = s_query + PID + symbol;
+			wcscpy(wquery, s_query.c_str());
 			char *query = nullptr;
 			convertToNarrowChars(wquery, query);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
@@ -132,7 +133,6 @@ vector<char *> searchAllOfRela(const wstring &PID, const wstring &CID)
 				{
 					result.push_back(row[i]);
 					i++;
-					row = mysql_fetch_row(res);
 				}
 				mysql_free_result(res);
 			}
@@ -187,6 +187,7 @@ vector<string> searchAllOfPeople(const wstring &Search_info, int type)
 				wstring s_query(L"select * from people where UID = '");
 				wstring symbol(L"'\n");
 				s_query = s_query + Search_info + symbol;
+				wcscpy(wquery, s_query.c_str());
 				// swprintf(wquery, L"select * from people where UID = '%s'", Search_info.c_str());
 			}
 			else if (type == 1)
@@ -216,12 +217,9 @@ vector<string> searchAllOfPeople(const wstring &Search_info, int type)
 				res = mysql_store_result(con); // result
 				row = mysql_fetch_row(res);	// row is two dimension array.
 				int i = 0;
-				char *temp_store = new char[64];
-				memset(temp_store, 0, strlen(temp_store));
 				while (i < peo_table_element_num)
 				{
-					strcpy(temp_store, row[i]);
-					result.push_back(temp_store);
+					result.push_back(row[i]);
 					i++;
 					// row = mysql_fetch_row(res);
 				}

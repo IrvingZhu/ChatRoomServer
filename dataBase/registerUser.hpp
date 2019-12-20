@@ -39,7 +39,12 @@ int registerUser(const wstring &uid, const wstring &uname, const wstring &upassw
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set the code
 			char *query = nullptr;
-			swprintf(wquery, L"insert into people values('%s','%s','%s')", uid.c_str(), uname.c_str(), upassword1.c_str());
+			// swprintf(wquery, L"insert into people values('%s','%s','%s')", uid.c_str(), uname.c_str(), upassword1.c_str());
+			wstring s_query(L"insert into people values('");
+			wstring symbol_1(L"','");
+			wstring symbol_2(L"')");
+            s_query = s_query + uid + symbol_1 + uname + symbol_1 + upassword1 + symbol_2;
+            wcscpy(wquery, s_query.c_str());
 			convertToNarrowChars(wquery, query);
 			rt = mysql_real_query(con, query, strlen(query));
 			if (rt)
