@@ -188,6 +188,7 @@ vector<char *> searchAllOfPeople(const wstring &Search_info, int type)
 				wstring symbol(L"'\n");
 				s_query = s_query + Search_info + symbol;
 				// swprintf(wquery, L"select * from people where UID = '%s'", Search_info.c_str());
+			}
 			else if (type == 1)
 			{
 				// uname
@@ -196,6 +197,9 @@ vector<char *> searchAllOfPeople(const wstring &Search_info, int type)
 				s_query = s_query + Search_info + symbol;
 				// swprintf(wquery, L"select * from people where UNAME = '%s'", Search_info.c_str());
 				wcscpy(wquery, s_query.c_str());
+			}
+			else{
+				return result;
 			}
 			char *query = nullptr;
 			convertToNarrowChars(wquery, query);
