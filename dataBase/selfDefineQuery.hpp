@@ -7,7 +7,7 @@
 // #pragma comment(lib, "libmysql.lib")
 #pragma comment(a, "libmysql.a")
 
-std::vector<std::string> selfDefineQuery(const wchar_t *wquery, int ret_record, int para)
+std::vector<std::string> selfDefineQuery(const wchar_t *&wquery, int ret_record, int para)
 {
     std::vector<std::string> result;
     result.resize(para);
