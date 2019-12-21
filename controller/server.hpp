@@ -100,7 +100,7 @@ public:
             auto search_res = searchLogin(uname, upassword);
             if (search_res == 1)
             {
-                sock->async_write_some(boost::asio::buffer("SuccessLogin"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("SuccessLogin\n"), boost::bind(&server::start, this));
                 auto search_user_info = searchAllOfPeople(uname, 1);
                 auto iter = search_user_info.begin();
                 string send_info("PeopleInfo");
