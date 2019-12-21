@@ -66,12 +66,14 @@ int searchLogin(const wstring &uname, const wstring &upassword)
 				{
 					mysql_free_result(res);
 					delete[] srcomp;
+					cout << "This query's result is true" << endl;
 					return 1; // successful
 				}
 				else
 				{
 					mysql_free_result(res);
 					delete[] srcomp;
+					cout << "This query's result is false" << endl;
 					return 0;
 				}
 			}

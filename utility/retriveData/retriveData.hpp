@@ -6,10 +6,10 @@
 
 using namespace std;
 
-vector<wstring> retriveData(wstring src, int num)
+vector<string> retriveData(string src, int num)
 {
     int i = 0, start = 0, end = 0;
-    vector<wstring> res;
+    vector<string> res;
     if (num == 0)
     {
         return res;
@@ -21,7 +21,7 @@ vector<wstring> retriveData(wstring src, int num)
     }
     for (i; i < num; i++)
     {
-        auto posi = src.find(L" ");
+        auto posi = src.find(" ");
         end = posi;
         res.push_back(src.substr(start, end));
         src = src.substr(posi + 1);

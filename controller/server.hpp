@@ -14,8 +14,6 @@
 #include "../database/createRela.hpp"
 #include "../utility/retriveData/retriveData.hpp"
 #include "../utility/convert/convert.hpp"
-#include "../utility/convert/convertToWideChars.hpp"
-#include "../utility/convert/convertToNarrowChars.hpp"
 #include "../utility/stringHandle/stringHandle.hpp"
 #include "./chat/chat_controller.hpp"
 #include "./chat/chat_message.hpp"
@@ -78,10 +76,10 @@ public:
     void read_handler(const boost::system::error_code &ec, sock_ptr sock)
     {
         int init_pos = 0;
-        std::wstring comBuffer(convertToWideChars(this->buffer));
-        wcout.imbue(locale("chs"));
-        wcout << "command Buffer content is :" << comBuffer << '\n';
-        auto posi = comBuffer.find(L" ");
+        std::string comBuffer(this->buffer);
+        wstring output_to_terminal(convertToWString(comBuffer));
+        wcout << "command Buffer content is :" << output_to_terminal << '\n';
+        auto posi = comBuffer.find(" ");
         cout << "the blank position in the:" << posi << endl; // has no problem 2019.12.18
         if (posi > 1024)
         {
@@ -93,12 +91,12 @@ public:
 
         // for all,if return integer,true is return 1,false is 0
 
-        if (command.compare(L"Login") == 0)
+        if (command.compare("Login") == 0)
         {
             // format is "Login [uname] [upassword]"
             auto info_res = retriveData(content, login_info);
-            wstring uname(info_res[0]);
-            wstring upassword(info_res[1]);
+            wstring uname(convertToWString(info_res[0]));
+            wstring upassword(convertToWString(info_res[1]));
             auto search_res = searchLogin(uname, upassword);
             if (search_res == 1)
             {
@@ -125,13 +123,13 @@ public:
                 sock->async_write_some(boost::asio::buffer("ErrorLogin"), boost::bind(&server::start, this));
             }
         }
-        else if (command.compare(L"Register") == 0)
+        else if (command.compare("Register") == 0)
         {
             // format is "Register [uid] [uname] [upassword]"
             auto info_res = retriveData(content, register_info);
-            wstring uid(info_res[0]);
-            wstring uname(info_res[1]);
-            wstring upassword(info_res[2]);
+            wstring uid(convertToWString(info_res[0]));
+            wstring uname(convertToWString(info_res[1]));
+            wstring upassword(convertToWString(info_res[2]));
             auto search_res = registerUser(uid, uname, upassword);
             if (search_res == 1)
             {
@@ -142,13 +140,13 @@ public:
                 sock->async_write_some(boost::asio::buffer("ErrorRegister"), boost::bind(&server::start, this));
             }
         }
-        else if (command.compare(L"Modify") == 0)
+        else if (command.compare("Modify") == 0)
         {
             // format is "Modify [newUid] [newUname] [newPsw]"
             auto info_res = retriveData(content, modify_info);
-            wstring uid(info_res[0]);
-            wstring uname(info_res[1]);
-            wstring upassword(info_res[2]);
+            wstring uid(convertToWString(info_res[0]));
+            wstring uname(convertToWString(info_res[1]));
+            wstring upassword(convertToWString(info_res[2]));
             auto search_res = modifyPersonalInformation(uid, uname, upassword);
             if (search_res == 1)
             {
@@ -159,13 +157,13 @@ public:
                 sock->async_write_some(boost::asio::buffer("ErrorModify"), boost::bind(&server::start, this));
             }
         }
-        else if (command.compare(L"ModPsw") == 0)
+        else if (command.compare("ModPsw") == 0)
         {
             // format is "ModPsw [Uid] [Uname] [password]"
             auto info_res = retriveData(content, modify_info);
-            wstring uid(info_res[0]);
-            wstring uname(info_res[1]);
-            wstring upassword(info_res[2]);
+            wstring uid(convertToWString(info_res[0]));
+            wstring uname(convertToWString(info_res[1]));
+            wstring upassword(convertToWString(info_res[2]));
             auto search_res = modifyPersonalInformation(uid, uname, upassword);
             if (search_res == 1)
             {
@@ -176,13 +174,13 @@ public:
                 sock->async_write_some(boost::asio::buffer("ErrorModPsw"), boost::bind(&server::start, this));
             }
         }
-        else if (command.compare(L"CreateChatRoom") == 0)
+        else if (command.compare("CreateChatRoom") == 0)
         {
             // format is "Create [UID] [UName] [RoomName]"
             auto info_res = retriveData(content, create_info);
-            wstring uid(info_res[0]);
-            wstring uname(info_res[1]);
-            wstring roomname(info_res[2]);
+            wstring uid(convertToWString(info_res[0]));
+            wstring uname(convertToWString(info_res[1]));
+            wstring roomname(convertToWString(info_res[2]));
 
             // first,query rela table to find last id.
             wchar_t *rela_query = new wchar_t[64];
@@ -211,7 +209,7 @@ public:
                 // create success and join in.
                 sock->async_write_some(boost::asio::buffer("SuccessCre"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
                 chat_server_ptr server(new chat_server(sock, convertToString(uname)));
-                servers.insert(pair<string, chat_server_ptr>(convertToString(info_res[1]), server));
+                servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                 this->status = 1; //chat begin.
                 this->start();
             }
@@ -224,13 +222,13 @@ public:
             delete[] rela_query;
         }
         // long connect part
-        else if (command.compare(L"JoinNewChatRoom") == 0)
+        else if (command.compare("JoinNewChatRoom") == 0)
         {
             // format is "JoinNewChatRoom [UID] [Uname] [ChatName]"
             auto info_res = retriveData(content, join_info);
-            wstring UID(info_res[0]);
-            wstring UName(info_res[1]);
-            wstring ChatName(info_res[2]);
+            wstring UID(convertToWString(info_res[0]));
+            wstring UName(convertToWString(info_res[1]));
+            wstring ChatName(convertToWString(info_res[2]));
 
             wchar_t *wquery = new wchar_t[64];
             memset(wquery, 0, wcslen(wquery));
@@ -260,7 +258,7 @@ public:
                 {
                     sock->async_write_some(boost::asio::buffer("SuccessJoin"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
                     chat_server_ptr server(new chat_server(sock, convertToString(UName)));
-                    servers.insert(pair<string, chat_server_ptr>(convertToString(info_res[1]), server));
+                    servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                     this->status = 1;
                     this->start();
                 }
@@ -278,43 +276,43 @@ public:
 
             delete[] wquery;
         }
-        else if (command.compare(L"AccessChatRoom") == 0)
+        else if (command.compare("AccessChatRoom") == 0)
         {
             // format is "AccessChatRoom [UserName] [ChatName]"
             auto info_res = retriveData(content, access_info);
-            auto iter = servers.find(convertToString(info_res[1]));
+            auto iter = servers.find(info_res[1]);
             if (iter == servers.end())
             {
                 sock->async_write_some(boost::asio::buffer("NotFindRoom"), boost::bind(&server::start, this));
             }
-            chat_server_ptr server(new chat_server(sock, convertToString(info_res[0])));
+            chat_server_ptr server(new chat_server(sock, info_res[0]));
             servers.insert(pair<string, chat_server_ptr>(iter->first, server));
             sock->async_write_some(boost::asio::buffer("SuccessAccess"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
             this->status = 1;
             this->start();
         }
-        else if (command.compare(L"Chat") == 0 && this->status == 1)
+        else if (command.compare("Chat") == 0 && this->status == 1)
         {
             // info_res format
             // format: "Chat [ChatRoom] [UserName] [Info]"
             // [Info] = 4 byte length info + 32 byte of chat userName + 1024 byte of chat words.
             auto info_res = retriveData(content, chat_info);
-            auto iter = servers.find(convertToString(info_res[0])); // chat room name
+            auto iter = servers.find(info_res[0]); // chat room name
             auto this_server = iter->second;
             auto chat_content = info_res[2].c_str();
             // size jduge is client things
-            this_server->send(convertToString(info_res[1]), convertToString(info_res[2]));
+            this_server->send(info_res[1], info_res[2]);
 
             // have not send some infomation to client,because it is chat status.
             this->start();
         }
-        else if (command.compare(L"Leave") == 0 && this->status == 1)
+        else if (command.compare("Leave") == 0 && this->status == 1)
         {
             //format: "Leave [UserName] [ChatRoom]"
             auto info_res = retriveData(content, leave_info);
-            auto iter = servers.find(convertToString(info_res[1]));
+            auto iter = servers.find(info_res[1]);
             auto this_server = iter->second;
-            this_server->leave(convertToString(info_res[0]));
+            this_server->leave(info_res[0]);
 
             sock->async_write_some(boost::asio::buffer("SuccessLeave"), boost::bind(&server::start, this));
         }
