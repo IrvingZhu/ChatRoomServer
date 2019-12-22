@@ -77,6 +77,8 @@ public:
     {
         int init_pos = 0;
         std::string comBuffer(this->buffer);
+        cout << comBuffer << endl;
+        memset(this->buffer, 0, strlen(this->buffer));
         wstring output_to_terminal(convertToWString(comBuffer));
         wcout << "command Buffer content is :" << output_to_terminal << '\n';
         auto posi = comBuffer.find(" ");
@@ -100,7 +102,7 @@ public:
             auto search_res = searchLogin(uname, upassword);
             if (search_res == 1)
             {
-                sock->async_write_some(boost::asio::buffer("SuccessLogin"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("SuccessLogin/"), boost::bind(&server::start, this));
                 auto search_user_info = searchAllOfPeople(uname, 1);
                 auto iter = search_user_info.begin();
                 string send_info("PeopleInfo");
@@ -120,7 +122,7 @@ public:
             // parameter.
             else
             {
-                sock->async_write_some(boost::asio::buffer("ErrorLogin"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("ErrorLogin/"), boost::bind(&server::start, this));
             }
         }
         else if (command.compare("Register") == 0)
