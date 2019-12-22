@@ -9,6 +9,10 @@
 
 std::vector<std::string> selfDefineQuery(wchar_t *wquery, int ret_record, int para)
 {
+
+    // ret_record is the number of the tuple of return res in the database query.
+    // para is the number of the tuple's component in each row.
+
     std::vector<std::string> result;
 
     MYSQL *con;
