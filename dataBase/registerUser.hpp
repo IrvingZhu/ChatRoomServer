@@ -45,6 +45,7 @@ int registerUser(const wstring &uid, const wstring &uname, const wstring &upassw
             s_query = s_query + uid + symbol_1 + uname + symbol_1 + upassword1 + symbol_2;
             wcscpy(wquery, s_query.c_str());
 			auto query = convertToNarrowChars(wquery);
+			cout << "the query content is: " << query << "\n" << endl;
 			rt = mysql_real_query(con, query, strlen(query));
 			
 			if (rt)

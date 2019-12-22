@@ -131,7 +131,7 @@ public:
             auto info_res = retriveData(content, register_info);
             
             wstring uname(convertToWString(info_res[0]));
-            wstring upassword(convertToWString(info_res[1]));
+            wstring upassword(convertToWString(info_res[2]));
 
             wchar_t *people_query = new wchar_t[64];
             memset(people_query, 0, wcslen(people_query));
