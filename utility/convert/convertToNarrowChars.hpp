@@ -4,6 +4,9 @@
 
 char* convertToNarrowChars(wchar_t *preChars)
 {
+// if you want to use this function to get a memory,
+// you must need to clear when you exit before.
+
 	std::wstring srcChars(preChars);
 	auto res = convertToString(srcChars);
 
