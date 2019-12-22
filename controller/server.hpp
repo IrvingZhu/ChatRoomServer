@@ -127,12 +127,22 @@ public:
         }
         else if (command.compare("Register") == 0)
         {
-            // format is "Register [uid] [uname] [upassword]"
+            // format is "Register [uname] [upassword]"
             auto info_res = retriveData(content, register_info);
-            wstring uid(convertToWString(info_res[0]));
-            wstring uname(convertToWString(info_res[1]));
-            wstring upassword(convertToWString(info_res[2]));
-            auto search_res = registerUser(uid, uname, upassword);
+            
+            wstring uname(convertToWString(info_res[0]));
+            wstring upassword(convertToWString(info_res[1]));
+
+            wchar_t *people_query = new wchar_t[64];
+            memset(people_query, 0, wcslen(people_query));
+            wcscpy(people_query, L"select uid from people order by uid desc");
+
+            auto uid_res = selfDefineQuery(people_query, 1, 1);
+            auto uid = getNextKey(uid_res[0]);
+            auto Wuid = convertToWString(uid);
+
+            auto search_res = registerUser(Wuid, uname, upassword);
+
             if (search_res == 1)
             {
                 sock->async_write_some(boost::asio::buffer("SuccessRegister"), boost::bind(&server::start, this));
@@ -195,8 +205,8 @@ public:
             // second,query chatroomset to find last chatid.
             wchar_t *room_query = new wchar_t[64];
             memset(room_query, 0, wcslen(room_query));
-            wcscpy(rela_query, L"select ChatRID from chat_room_set order by ChatRID desc");
-            search_res = selfDefineQuery(rela_query, 1, 1);
+            wcscpy(room_query, L"select ChatRID from chat_room_set order by ChatRID desc");
+            search_res = selfDefineQuery(room_query, 1, 1);
 
             auto room_id_res = getNextKey(search_res[0]);
 
