@@ -78,11 +78,15 @@ public:
         int init_pos = 0;
         std::string comBuffer(this->buffer);
         cout << comBuffer << "\n" << endl;
+
         memset(this->buffer, 0, strlen(this->buffer));
+
         wstring output_to_terminal(convertToWString(comBuffer));
         wcout << "command Buffer content is :" << output_to_terminal << '\n';
+
         auto posi = comBuffer.find(" ");
         cout << "the blank position in the:" << posi << endl; // has no problem 2019.12.18
+
         if (posi > 1024)
         {
             sock->async_write_some(boost::asio::buffer("InfoError"), boost::bind(&server::start, this));
@@ -97,13 +101,12 @@ public:
         {
             // format is "Login [uname] [upassword]"
             auto info_res = retriveData(content, login_info);
-            wstring uname(convertToWString(info_res[0]));
-            wstring upassword(convertToWString(info_res[1]));
-            auto search_res = searchLogin(uname, upassword);
+            auto search_res = searchLogin(info_res[0], info_res[1]);
+
             if (search_res == 1)
             {
                 sock->async_write_some(boost::asio::buffer("SuccessLogin/"), boost::bind(&server::start, this));
-                auto search_user_info = searchAllOfPeople(uname, 1);
+                auto search_user_info = searchAllOfPeople(info_res[0], 1);
                 auto iter = search_user_info.begin();
                 string send_info("PeopleInfo");
                 while (iter != search_user_info.end())
@@ -129,19 +132,15 @@ public:
         {
             // format is "Register [uname] [upassword]"
             auto info_res = retriveData(content, register_info);
-            
-            wstring uname(convertToWString(info_res[0]));
-            wstring upassword(convertToWString(info_res[1]));
 
-            wchar_t *people_query = new wchar_t[64];
-            memset(people_query, 0, wcslen(people_query));
-            wcscpy(people_query, L"select uid from people order by uid desc"); 
+            char *people_query = new char[64];
+            memset(people_query, 0, strlen(people_query));
+            strcpy(people_query, "select uid from people order by uid desc"); 
 
             auto uid_res = selfDefineQuery(people_query, 1, 1);  // has a fault
             auto uid = getNextKey(uid_res[0]);  // has a fault
-            auto Wuid = convertToWString(uid);
 
-            auto search_res = registerUser(Wuid, uname, upassword);
+            auto search_res = registerUser(uid, info_res[0], info_res[1]);
 
             if (search_res == 1)
             {
@@ -151,15 +150,14 @@ public:
             {
                 sock->async_write_some(boost::asio::buffer("ErrorRegister/"), boost::bind(&server::start, this));
             }
+
+            delete[] people_query;
         }
         else if (command.compare("Modify") == 0)
         {
             // format is "Modify [newUid] [newUname] [newPsw]"
             auto info_res = retriveData(content, modify_info);
-            wstring uid(convertToWString(info_res[0]));
-            wstring uname(convertToWString(info_res[1]));
-            wstring upassword(convertToWString(info_res[2]));
-            auto search_res = modifyPersonalInformation(uid, uname, upassword);
+            auto search_res = modifyPersonalInformation(info_res[0], info_res[1], info_res[2]);
             if (search_res == 1)
             {
                 sock->async_write_some(boost::asio::buffer("SuccessModify"), boost::bind(&server::start, this));
@@ -173,10 +171,8 @@ public:
         {
             // format is "ModPsw [Uid] [Uname] [password]"
             auto info_res = retriveData(content, modify_info);
-            wstring uid(convertToWString(info_res[0]));
-            wstring uname(convertToWString(info_res[1]));
-            wstring upassword(convertToWString(info_res[2]));
-            auto search_res = modifyPersonalInformation(uid, uname, upassword);
+            auto search_res = modifyPersonalInformation(info_res[0], info_res[1], info_res[2]);
+
             if (search_res == 1)
             {
                 sock->async_write_some(boost::asio::buffer("SuccessModPsw"), boost::bind(&server::start, this));
@@ -190,37 +186,32 @@ public:
         {
             // format is "Create [UID] [UName] [RoomName]"
             auto info_res = retriveData(content, create_info);
-            wstring uid(convertToWString(info_res[0]));
-            wstring uname(convertToWString(info_res[1]));
-            wstring roomname(convertToWString(info_res[2]));
 
             // first,query rela table to find last id.
-            wchar_t *rela_query = new wchar_t[64];
-            memset(rela_query, 0, wcslen(rela_query));
-            wcscpy(rela_query, L"select id from peo_chat_r order by id desc");
+            char *rela_query = new char[64];
+            memset(rela_query, 0, strlen(rela_query));
+            strcpy(rela_query, "select id from peo_chat_r order by id desc");
             auto search_res = selfDefineQuery(rela_query, 1, 1);
 
             auto rela_id_res = getNextKey(search_res[0]);
 
             // second,query chatroomset to find last chatid.
-            wchar_t *room_query = new wchar_t[64];
-            memset(room_query, 0, wcslen(room_query));
-            wcscpy(room_query, L"select ChatRID from chat_room_set order by ChatRID desc");
+            char *room_query = new char[64];
+            memset(room_query, 0, strlen(room_query));
+            strcpy(room_query, "select ChatRID from chat_room_set order by ChatRID desc");
             search_res = selfDefineQuery(room_query, 1, 1);
 
             auto room_id_res = getNextKey(search_res[0]);
 
             // thrid,add infomation into database
-            auto Wroom_id_res = convertToWString(room_id_res);
-            auto Wrela_id_res = convertToWString(rela_id_res);
-            int ret_res_room = createChatRoom(Wroom_id_res, roomname);
-            int ret_res_rela = createRela(Wrela_id_res, uid, Wroom_id_res);
+            int ret_res_room = createChatRoom(room_id_res, rela_id_res);
+            int ret_res_rela = createRela(rela_id_res, info_res[0], room_id_res);
 
             if (ret_res_room > 0 && ret_res_rela > 0)
             {
                 // create success and join in.
                 sock->async_write_some(boost::asio::buffer("SuccessCre"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
-                chat_server_ptr server(new chat_server(sock, convertToString(uname)));
+                chat_server_ptr server(new chat_server(sock, info_res[1]));
                 servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                 this->status = 1; //chat begin.
                 this->start();
@@ -238,38 +229,34 @@ public:
         {
             // format is "JoinNewChatRoom [UID] [Uname] [ChatName]"
             auto info_res = retriveData(content, join_info);
-            wstring UID(convertToWString(info_res[0]));
-            wstring UName(convertToWString(info_res[1]));
-            wstring ChatName(convertToWString(info_res[2]));
 
-            wchar_t *wquery = new wchar_t[64];
-            memset(wquery, 0, wcslen(wquery));
-            // swprintf(wquery, L"select ChatID from chatroomset where ChatName = '%s'", ChatName.c_str()); // find ChatRoom in database
-            wstring s_query(L"select ChatID from chatroomset where ChatName = '");
-            wstring symbol(L"'\n");
-            s_query = s_query + ChatName + symbol;
-            wcscpy(wquery, s_query.c_str());
-            auto search_res = selfDefineQuery(wquery, 1, 1);
-            auto ChatID = convertToWString(search_res[0]); // chatid
+            char *query = new char[64];
+            memset(query, 0, strlen(query));
+
+            string s_query("select ChatID from chatroomset where ChatName = '");
+            string symbol("'\n");
+            s_query = s_query + info_res[2] + symbol;
+
+            strcpy(query, s_query.c_str());
+            auto search_res = selfDefineQuery(query, 1, 1);
 
             if (!search_res.empty())
             {
                 // 1.search id desc from rela table
-                wchar_t *rela_query = new wchar_t[64];
-                memset(rela_query, 0, wcslen(rela_query));
-                wcscpy(rela_query, L"select id from peo_chat_r order by id desc");
+                char *rela_query = new char[64];
+                memset(rela_query, 0, strlen(rela_query));
+                strcpy(rela_query, "select id from peo_chat_r order by id desc");
                 auto search_res = selfDefineQuery(rela_query, 1, 1);
 
                 // 2.add this relation into rela table
                 auto Rela_ID_S = getNextKey(search_res[0]);
-                auto Rela_ID = convertToWString(Rela_ID_S);
-                int cre_res = createRela(Rela_ID, UID, ChatID);
+                int cre_res = createRela(Rela_ID_S, info_res[0], search_res[0]);
 
                 // 3.jduge whether it is success.
                 if (cre_res == 1)
                 {
                     sock->async_write_some(boost::asio::buffer("SuccessJoin"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
-                    chat_server_ptr server(new chat_server(sock, convertToString(UName)));
+                    chat_server_ptr server(new chat_server(sock, info_res[1]));
                     servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                     this->status = 1;
                     this->start();
@@ -286,7 +273,7 @@ public:
                 sock->async_write_some(boost::asio::buffer("ChatRoomNotExist"), boost::bind(&server::start, this));
             }
 
-            delete[] wquery;
+            delete[] query;
         }
         else if (command.compare("AccessChatRoom") == 0)
         {

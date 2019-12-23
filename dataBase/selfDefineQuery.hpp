@@ -3,11 +3,11 @@
 #include <iostream>
 #include "mysql.h"
 #include <vector>
-#include "../utility/convert/convertToNarrowChars.hpp"
+// #include "../utility/convert/convertToNarrowChars.hpp"
 // #pragma comment(lib, "libmysql.lib")
 #pragma comment(a, "libmysql.a")
 
-std::vector<std::string> selfDefineQuery(wchar_t *wquery, int ret_record, int para)
+std::vector<std::string> selfDefineQuery(char *wquery, int ret_record, int para)
 {
 
     // ret_record is the number of the tuple of return res in the database query.
@@ -23,10 +23,10 @@ std::vector<std::string> selfDefineQuery(wchar_t *wquery, int ret_record, int pa
     char dbuser[32] = "root";
     char dbpasswd[32] = "root";
     char dbname[32] = "chatroom";
-    wchar_t *mwquery = new wchar_t[256];
-    memset(mwquery, 0, wcslen(mwquery));
-    wcscpy(mwquery, wquery);
-    delete[] mwquery;
+    char *mquery = new char[512];
+    memset(mquery, 0, strlen(mquery));
+    strcpy(mquery, wquery);
+    delete[] mquery;
 
     int rt; //return value
 
@@ -42,18 +42,18 @@ std::vector<std::string> selfDefineQuery(wchar_t *wquery, int ret_record, int pa
                       << std::endl;
             con->reconnect = 1;
             mysql_query(con, "SET NAMES GBK"); // set code format
-            auto query = convertToNarrowChars(wquery);
-            rt = mysql_real_query(con, query, strlen(query)); // qurey result
+            // auto query = convertToNarrowChars(wquery);
+            rt = mysql_real_query(con, mquery, strlen(mquery)); // qurey result
             if (rt)
             {
                 std::cout << "ERROR making query: " << mysql_error(con) << " !!!" << std::endl;
-                delete[] query;
+                delete[] mquery;
                 return result;
             }
             else
             {
-                std::cout << "Success " << query << std::endl;
-                delete[] query;
+                std::cout << "Success " << mquery << std::endl;
+                delete[] mquery;
                 res = new MYSQL_RES;
                 res = mysql_store_result(con); // result
 

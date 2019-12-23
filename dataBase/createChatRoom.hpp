@@ -1,13 +1,13 @@
 #pragma once
 #include <iostream>
-#include "../utility/convert/convertToNarrowChars.hpp"
+// #include "../utility/convert/convertToNarrowChars.hpp"
 #include "mysql.h"
 // #pragma comment(lib, "libmysql.lib")
 #pragma comment(a, "libmysql.a")
 
 using namespace std;
 
-int createChatRoom(const wstring &ChatID, const wstring &ChatName)
+int createChatRoom(const string &ChatID, const string &ChatName)
 {
 	/*
 	if true,return 1
@@ -21,7 +21,7 @@ int createChatRoom(const wstring &ChatID, const wstring &ChatName)
 	char dbuser[32] = "root";
 	char dbpasswd[32] = "root";
 	char dbname[32] = "chatroom";
-	wchar_t wquery[256] = L"";
+	char query[512] = "";
 
 	int rt; //return value
 
@@ -38,12 +38,12 @@ int createChatRoom(const wstring &ChatID, const wstring &ChatName)
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set code format
 			// swprintf(wquery, L"insert into chatroomset values('%s','%s')", ChatID.c_str(), ChatName.c_str());
-			wstring s_query(L"insert into chatroomset values('");
-			wstring symbol_1(L"','");
-			wstring symbol_2(L"')");
+			string s_query("insert into chatroomset values('");
+			string symbol_1("','");
+			string symbol_2("')");
 			s_query = s_query + ChatID + symbol_1 + ChatName + symbol_2;
-			wcscpy(wquery, s_query.c_str());
-			auto query = convertToNarrowChars(wquery);
+			strcpy(query, s_query.c_str());
+			// auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
 			if (rt)
 			{

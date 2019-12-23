@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <vector>
-#include "../utility/convert/convertToNarrowChars.hpp"
+// #include "../utility/convert/convertToNarrowChars.hpp"
 #include "mysql.h"
 // #pragma comment(lib, "libmysql.lib")
 #pragma comment(a, "libmysql.a")
@@ -16,7 +16,7 @@ int ChatRoom_num = 2;
 // if query true,return a full vector,
 // else return a null set of vector.
 
-vector<string> searchAllOfChatRoom(const wstring &ChatID)
+vector<string> searchAllOfChatRoom(const string &ChatID)
 {
 	vector<string> result;
 	
@@ -28,7 +28,7 @@ vector<string> searchAllOfChatRoom(const wstring &ChatID)
 	char dbuser[32] = "root";
 	char dbpasswd[32] = "root";
 	char dbname[32] = "chatroom";
-	wchar_t wquery[256] = L"";
+	char query[512] = "";
 
 	int rt; //return value
 
@@ -44,8 +44,8 @@ vector<string> searchAllOfChatRoom(const wstring &ChatID)
 				 << endl;
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set code format
-			swprintf(wquery, L"select * from chatroomset where ChatID = '%s'", ChatID.c_str());
-			auto query = convertToNarrowChars(wquery);
+			sprintf(query, "select * from chatroomset where ChatID = '%s'", ChatID.c_str());
+			// auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
 			if (rt)
 			{
@@ -83,7 +83,7 @@ vector<string> searchAllOfChatRoom(const wstring &ChatID)
 	}
 }
 
-vector<string> searchAllOfRela(const wstring &PID, const wstring &CID)
+vector<string> searchAllOfRela(const string &PID, const string &CID)
 {
 	vector<string> result;
 
@@ -95,7 +95,7 @@ vector<string> searchAllOfRela(const wstring &PID, const wstring &CID)
 	char dbuser[32] = "root";
 	char dbpasswd[32] = "root";
 	char dbname[32] = "chatroom";
-	wchar_t wquery[256] = L"";
+	char query[512] = "";
 
 	int rt; //return value
 
@@ -112,11 +112,11 @@ vector<string> searchAllOfRela(const wstring &PID, const wstring &CID)
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set code format
 			// swprintf(wquery, L"select * from peo_chat_r where UID = '%s'", PID.c_str());
-			wstring s_query(L"select * from peo_chat_r where UID = '");
-			wstring symbol(L"'\n");
+			string s_query("select * from peo_chat_r where UID = '");
+			string symbol("'\n");
 			s_query = s_query + PID + symbol;
-			wcscpy(wquery, s_query.c_str());
-			auto query = convertToNarrowChars(wquery);
+			strcpy(query, s_query.c_str());
+			// auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
 			if (rt)
 			{
@@ -154,7 +154,7 @@ vector<string> searchAllOfRela(const wstring &PID, const wstring &CID)
 	}
 }
 
-vector<string> searchAllOfPeople(const wstring &Search_info, int type)
+vector<string> searchAllOfPeople(const string &Search_info, int type)
 {
 	// uid 0
 	// uname 1
@@ -168,7 +168,7 @@ vector<string> searchAllOfPeople(const wstring &Search_info, int type)
 	char dbuser[32] = "root";
 	char dbpasswd[32] = "root";
 	char dbname[32] = "chatroom";
-	wchar_t wquery[256] = L"";
+	char query[512] = "";
 
 	int rt; //return value
 
@@ -187,25 +187,25 @@ vector<string> searchAllOfPeople(const wstring &Search_info, int type)
 			if (type == 0)
 			{
 				// uid
-				wstring s_query(L"select * from people where UID = '");
-				wstring symbol(L"'\n");
+				string s_query("select * from people where UID = '");
+				string symbol("'\n");
 				s_query = s_query + Search_info + symbol;
-				wcscpy(wquery, s_query.c_str());
+				strcpy(query, s_query.c_str());
 				// swprintf(wquery, L"select * from people where UID = '%s'", Search_info.c_str());
 			}
 			else if (type == 1)
 			{
 				// uname
-				wstring s_query(L"select * from people where UNAME = '");
-				wstring symbol(L"'\n");
+				string s_query("select * from people where UNAME = '");
+				string symbol("'\n");
 				s_query = s_query + Search_info + symbol;
 				// swprintf(wquery, L"select * from people where UNAME = '%s'", Search_info.c_str());
-				wcscpy(wquery, s_query.c_str());
+				strcpy(query, s_query.c_str());
 			}
 			else{
 				return result;
 			}
-			auto query = convertToNarrowChars(wquery);
+			// auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query)); // qurey result
 			if (rt)
 			{

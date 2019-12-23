@@ -1,13 +1,13 @@
 #pragma once
 #include <iostream>
-#include "../utility/convert/convertToNarrowChars.hpp"
+// #include "../utility/convert/convertToNarrowChars.hpp"
 #include "mysql.h"
 // #pragma comment(lib, "libmysql.lib")
 #pragma comment(a, "libmysql.a")
 
 using namespace std;
 
-int createRela(const wstring &ID, const wstring &UID, const wstring &ChatID)
+int createRela(const string &ID, const string &UID, const string &ChatID)
 {
     /*
 	if true,return 1
@@ -21,7 +21,7 @@ int createRela(const wstring &ID, const wstring &UID, const wstring &ChatID)
     char dbuser[32] = "root";
     char dbpasswd[32] = "root";
     char dbname[32] = "chatroom";
-    wchar_t wquery[256] = L"";
+    char query[512] = "";
 
     int rt; //return value
 
@@ -38,12 +38,12 @@ int createRela(const wstring &ID, const wstring &UID, const wstring &ChatID)
             con->reconnect = 1;
             mysql_query(con, "SET NAMES GBK"); // set code format
             // swprintf(wquery, L"insert into peo_chat_r values('%s', '%s','%s')", ID.c_str(), UID.c_str(), ChatID.c_str());
-			wstring s_query(L"insert into peo_chat_r values('");
-			wstring symbol_1(L"','");
-			wstring symbol_2(L"')");
+			string s_query("insert into peo_chat_r values('");
+			string symbol_1("','");
+			string symbol_2("')");
             s_query = s_query + ID + symbol_1 + UID + symbol_1 + ChatID + symbol_2;
-            wcscpy(wquery, s_query.c_str());              
-            auto query = convertToNarrowChars(wquery);
+            strcpy(query, s_query.c_str());              
+            // auto query = convertToNarrowChars(wquery);
             rt = mysql_real_query(con, query, strlen(query)); // qurey result
             
             if (rt)

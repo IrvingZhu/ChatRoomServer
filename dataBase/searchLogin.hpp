@@ -1,13 +1,13 @@
 #pragma once
 #include <iostream>
-#include "../utility/convert/convertToNarrowChars.hpp"
+// #include "../utility/convert/convertToNarrowChars.hpp"
 #include "mysql.h"
 // #pragma comment(lib, "libmysql.lib")
 #pragma comment(a, "libmysql.a")
 
 using namespace std;
 
-int searchLogin(const wstring &uname, const wstring &upassword)
+int searchLogin(const string &uname, const string &upassword)
 {
 	/*
 	if true,return 1
@@ -22,7 +22,7 @@ int searchLogin(const wstring &uname, const wstring &upassword)
 	char dbpasswd[32] = "root";
 	char dbname[32] = "chatroom";
 	char tablename[32] = "people";
-	wchar_t wquery[256] = L"";
+	char query[512] = "";
 
 	int rt; //return value
 
@@ -38,11 +38,11 @@ int searchLogin(const wstring &uname, const wstring &upassword)
 				 << endl;
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set code format
-			wstring s_query(L"select upassword from people where UNAME = '");
-			wstring symbol(L"'\n");
+			string s_query("select upassword from people where UNAME = '");
+			string symbol("'\n");
 			s_query = s_query + uname + symbol;
-			wcscpy(wquery, s_query.c_str());
-			auto query = convertToNarrowChars(wquery);
+			strcpy(query, s_query.c_str());
+			// auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query)); //qurey result
 			if (rt)
 			{
@@ -61,7 +61,7 @@ int searchLogin(const wstring &uname, const wstring &upassword)
 				if (!row)
 					return 0;
 
-				auto srcomp = convertToNarrowChars((wchar_t *)upassword.c_str());
+				auto srcomp = upassword.c_str();
 				if (!strcmp(row[0], srcomp))
 				{
 					mysql_free_result(res);

@@ -1,13 +1,13 @@
 #pragma once
 #include <iostream>
-#include "../utility/convert/convertToNarrowChars.hpp"
+// #include "../utility/convert/convertToNarrowChars.hpp"
 #include "mysql.h"
 // #pragma comment(lib, "libmysql.lib")
 #pragma comment(a, "libmysql.a")
 
 using namespace std;
 
-int modifyPersonalInformation(const wstring &uid, const wstring &uname, const wstring &upassword)
+int modifyPersonalInformation(const string &uid, const string &uname, const string &upassword)
 {
 	/*
 	if true,return 1
@@ -22,7 +22,7 @@ int modifyPersonalInformation(const wstring &uid, const wstring &uname, const ws
 	char dbpasswd[32] = "root";
 	char dbname[32] = "chatroom";
 	char tablename[32] = "people";
-	wchar_t wquery[256] = L"";
+	char query[512] = "";
 
 	int rt; //return value
 
@@ -39,13 +39,13 @@ int modifyPersonalInformation(const wstring &uid, const wstring &uname, const ws
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set the code
 			// swprintf(wquery, L"update people set uid = '%s', uname = '%s', upassword = '%s'", uid.c_str(), uname.c_str(), upassword.c_str());
-			wstring s_query(L"update people set uid = '");
-			wstring s1(L"', uname = '");
-			wstring s2(L"', upassword = '");
-			wstring s3(L"'");
+			string s_query("update people set uid = '");
+			string s1("', uname = '");
+			string s2("', upassword = '");
+			string s3("'");
 			s_query = s_query + uid + s1 + uname + s2 + upassword + s3;
-			wcscpy(wquery, s_query.c_str());			
-			auto query = convertToNarrowChars(wquery);
+			strcpy(query, s_query.c_str());			
+			// auto query = convertToNarrowChars(wquery);
 			rt = mysql_real_query(con, query, strlen(query));
 			
 			if (rt)
