@@ -25,7 +25,7 @@
 
 using namespace std;
 
-int login_info = 2, register_info = 3, modify_info = 3, create_info = 3, join_info = 3, access_info = 2, chat_info = 3, leave_info = 2;
+int login_info = 2, register_info = 2, modify_info = 3, create_info = 3, join_info = 3, access_info = 2, chat_info = 3, leave_info = 2;
 
 typedef std::shared_ptr<boost::asio::ip::tcp::socket> sock_ptr;
 
@@ -77,7 +77,7 @@ public:
     {
         int init_pos = 0;
         std::string comBuffer(this->buffer);
-        cout << comBuffer << endl;
+        cout << comBuffer << "\n" << endl;
         memset(this->buffer, 0, strlen(this->buffer));
         wstring output_to_terminal(convertToWString(comBuffer));
         wcout << "command Buffer content is :" << output_to_terminal << '\n';
@@ -131,25 +131,25 @@ public:
             auto info_res = retriveData(content, register_info);
             
             wstring uname(convertToWString(info_res[0]));
-            wstring upassword(convertToWString(info_res[2]));
+            wstring upassword(convertToWString(info_res[1]));
 
             wchar_t *people_query = new wchar_t[64];
             memset(people_query, 0, wcslen(people_query));
-            wcscpy(people_query, L"select uid from people order by uid desc");
+            wcscpy(people_query, L"select uid from people order by uid desc"); 
 
-            auto uid_res = selfDefineQuery(people_query, 1, 1);
-            auto uid = getNextKey(uid_res[0]);
+            auto uid_res = selfDefineQuery(people_query, 1, 1);  // has a fault
+            auto uid = getNextKey(uid_res[0]);  // has a fault
             auto Wuid = convertToWString(uid);
 
             auto search_res = registerUser(Wuid, uname, upassword);
 
             if (search_res == 1)
             {
-                sock->async_write_some(boost::asio::buffer("SuccessRegister"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("SuccessRegister/"), boost::bind(&server::start, this));
             }
             else
             {
-                sock->async_write_some(boost::asio::buffer("ErrorRegister"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("ErrorRegister/"), boost::bind(&server::start, this));
             }
         }
         else if (command.compare("Modify") == 0)

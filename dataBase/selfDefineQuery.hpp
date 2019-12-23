@@ -71,7 +71,7 @@ std::vector<std::string> selfDefineQuery(wchar_t *wquery, int ret_record, int pa
                     while (para_count < para)
                     {
                         each_per_res.push_back(row[para_count]);
-                        each_res = each_res + each_res[para_count];
+                        each_res = each_res + each_per_res[para_count];
                         para_count++;
                     }
                     result.push_back(each_res);
