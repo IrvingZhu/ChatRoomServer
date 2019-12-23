@@ -51,13 +51,11 @@ int registerUser(const string &uid, const string &uname, const string &upassword
 			if (rt)
 			{ // error
 				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
-				delete[] query;
 				return -2;
 			}
 			else
 			{ //success
 				cout << "successfully insert" << endl;
-				delete[] query;
 				return 1;
 			}
 		}

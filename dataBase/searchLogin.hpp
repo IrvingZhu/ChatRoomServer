@@ -47,13 +47,11 @@ int searchLogin(const string &uname, const string &upassword)
 			if (rt)
 			{
 				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
-				delete[] query;
 				return 0;
 			}
 			else
 			{ // success
 				cout << "Success " << query << endl;
-				delete[] query;
 				res = new MYSQL_RES;
 				res = mysql_store_result(con); // result
 				row = mysql_fetch_row(res);
@@ -65,14 +63,12 @@ int searchLogin(const string &uname, const string &upassword)
 				if (!strcmp(row[0], srcomp))
 				{
 					mysql_free_result(res);
-					delete[] srcomp;
 					cout << "This query's result is true" << endl;
 					return 1; // successful
 				}
 				else
 				{
 					mysql_free_result(res);
-					delete[] srcomp;
 					cout << "This query's result is false" << endl;
 					return 0;
 				}

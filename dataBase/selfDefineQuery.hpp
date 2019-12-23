@@ -26,7 +26,6 @@ std::vector<std::string> selfDefineQuery(char *wquery, int ret_record, int para)
     char *mquery = new char[512];
     memset(mquery, 0, strlen(mquery));
     strcpy(mquery, wquery);
-    delete[] mquery;
 
     int rt; //return value
 

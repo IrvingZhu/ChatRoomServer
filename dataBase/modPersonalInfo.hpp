@@ -51,13 +51,11 @@ int modifyPersonalInformation(const string &uid, const string &uname, const stri
 			if (rt)
 			{ // error
 				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
-				delete[] query;
 				return -2;
 			}
 			else
 			{ // success
 				cout << "successfully update" << endl;
-				delete[] query;
 				return 1;
 			}
 		}

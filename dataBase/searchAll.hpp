@@ -50,13 +50,11 @@ vector<string> searchAllOfChatRoom(const string &ChatID)
 			if (rt)
 			{
 				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
-				delete[] query;
 				return result;
 			}
 			else
 			{
 				cout << "Success " << query << endl;
-				delete[] query;
 				res = new MYSQL_RES;
 				res = mysql_store_result(con); // result
 				row = mysql_fetch_row(res);	// row is two dimension array.
@@ -121,13 +119,11 @@ vector<string> searchAllOfRela(const string &PID, const string &CID)
 			if (rt)
 			{
 				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
-				delete[] query;
 				return result;
 			}
 			else
 			{
 				cout << "Success " << query << endl;
-				delete[] query;
 				res = new MYSQL_RES;
 				res = mysql_store_result(con); // result
 				row = mysql_fetch_row(res);	// row is two dimension array.
@@ -210,13 +206,11 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 			if (rt)
 			{
 				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
-				delete[] query;
 				return result;
 			}
 			else
 			{
 				cout << "Success " << query << endl;
-				delete[] query;
 				res = new MYSQL_RES;
 				res = mysql_store_result(con); // result
 				row = mysql_fetch_row(res);	// row is two dimension array.
