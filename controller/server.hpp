@@ -122,9 +122,9 @@ public:
         }
         else if (command.compare("SendUserInfo") == 0)
         {
-            // format is "SendUserInfo [uname]"
+            // format is "SendUserInfo [uid]"
             auto info_res = retriveData(content, send_user_info);
-            auto search_user_info = searchAllOfPeople(info_res[0], 1);
+            auto search_user_info = searchAllOfPeople(info_res[0], 0);
             auto iter = search_user_info.begin();
             string send_info("PeopleInfo");
             while (iter != search_user_info.end())
