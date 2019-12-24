@@ -6,7 +6,7 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include "../database/searchLogin.hpp"
-#include "../database/searchAll.hpp"
+#include "../database/searchAllOfUser.hpp"
 #include "../database/registerUser.hpp"
 #include "../database/modPersonalInfo.hpp"
 #include "../database/createChatRoom.hpp"
@@ -26,7 +26,7 @@
 using namespace std;
 
 int login_info = 2, register_info = 2, modify_info = 3, create_info = 3, join_info = 3, access_info = 2, chat_info = 3, leave_info = 2;
-int send_user_info = 1;
+int search_all_user_info = 1, search_user_joined_info = 1;
 
 typedef std::shared_ptr<boost::asio::ip::tcp::socket> sock_ptr;
 
@@ -120,21 +120,6 @@ public:
                 sock->async_write_some(boost::asio::buffer("ErrorLogin/"), boost::bind(&server::start, this));
             }
         }
-        else if (command.compare("SendUserInfo") == 0)
-        {
-            // format is "SendUserInfo [uid]"
-            auto info_res = retriveData(content, send_user_info);
-            auto search_user_info = searchAllOfPeople(info_res[0], 0);
-            auto iter = search_user_info.begin();
-            string send_info("PeopleInfo");
-            while (iter != search_user_info.end())
-            {
-                send_info = send_info + " ";
-                send_info = send_info + *iter;
-                iter++;
-            }
-            sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
-        }
         else if (command.compare("Register") == 0)
         {
             // format is "Register [uname] [upassword]"
@@ -159,6 +144,25 @@ public:
             }
 
             delete[] people_query;
+        }
+        else if (command.compare("SearchUserAllInfo") == 0)
+        {
+            // format is "SendUserInfo [uid]"
+            auto info_res = retriveData(content, search_all_user_info);
+            auto search_user_info = searchAllOfPeople(info_res[0], 0);
+            auto iter = search_user_info.begin();
+            string send_info("PeopleInfo");
+            while (iter != search_user_info.end())
+            {
+                send_info = send_info + " ";
+                send_info = send_info + *iter;
+                iter++;
+            }
+            sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
+        }
+        else if (command.compare("SearchUserAllJoinedRoom") == 0){
+            // format is "SearchUserAllJoinedRoom [uid]"
+            auto info_res = retriveData(content, search_user_joined_info);
         }
         else if (command.compare("Modify") == 0)
         {
