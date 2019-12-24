@@ -26,6 +26,7 @@
 using namespace std;
 
 int login_info = 2, register_info = 2, modify_info = 3, create_info = 3, join_info = 3, access_info = 2, chat_info = 3, leave_info = 2;
+int send_user_info = 1;
 
 typedef std::shared_ptr<boost::asio::ip::tcp::socket> sock_ptr;
 
@@ -77,7 +78,8 @@ public:
     {
         int init_pos = 0;
         std::string comBuffer(this->buffer);
-        cout << comBuffer << "\n" << endl;
+        cout << comBuffer << "\n"
+             << endl;
 
         memset(this->buffer, 0, strlen(this->buffer));
 
@@ -106,16 +108,6 @@ public:
             if (search_res == 1)
             {
                 sock->async_write_some(boost::asio::buffer("SuccessLogin/"), boost::bind(&server::start, this));
-                auto search_user_info = searchAllOfPeople(info_res[0], 1);
-                auto iter = search_user_info.begin();
-                string send_info("PeopleInfo");
-                while (iter != search_user_info.end())
-                {
-                    send_info = send_info + " ";
-                    send_info = send_info + *iter;
-                    iter++;
-                }
-                sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
             }
             // boost::bind(&func,para1,para2,para3,...)
             // in this,para is a sequence of func's parameter.
@@ -128,6 +120,21 @@ public:
                 sock->async_write_some(boost::asio::buffer("ErrorLogin/"), boost::bind(&server::start, this));
             }
         }
+        else if (command.compare("SendUserInfo") == 0)
+        {
+            // format is "SendUserInfo [uname]"
+            auto info_res = retriveData(content, send_user_info);
+            auto search_user_info = searchAllOfPeople(info_res[0], 1);
+            auto iter = search_user_info.begin();
+            string send_info("PeopleInfo");
+            while (iter != search_user_info.end())
+            {
+                send_info = send_info + " ";
+                send_info = send_info + *iter;
+                iter++;
+            }
+            sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
+        }
         else if (command.compare("Register") == 0)
         {
             // format is "Register [uname] [upassword]"
@@ -135,10 +142,10 @@ public:
 
             char *people_query = new char[64];
             memset(people_query, 0, strlen(people_query));
-            strcpy(people_query, "select uid from people order by uid desc"); 
+            strcpy(people_query, "select uid from people order by uid desc");
 
-            auto uid_res = selfDefineQuery(people_query, 1, 1);  // has a fault
-            auto uid = getNextKey(uid_res[0]);  // has a fault
+            auto uid_res = selfDefineQuery(people_query, 1, 1); // has a fault
+            auto uid = getNextKey(uid_res[0]);                  // has a fault
 
             auto search_res = registerUser(uid, info_res[0], info_res[1]);
 
