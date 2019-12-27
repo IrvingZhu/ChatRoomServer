@@ -12,6 +12,7 @@
 #include "../database/createChatRoom.hpp"
 #include "../database/selfDefineQuery.hpp"
 #include "../database/createRela.hpp"
+#include "../dataBase/searchUserJoinedRoom.hpp"
 #include "../utility/retriveData/retriveData.hpp"
 #include "../utility/convert/convert.hpp"
 #include "../utility/stringHandle/stringHandle.hpp"
@@ -163,6 +164,15 @@ public:
         else if (command.compare("SearchUserAllJoinedRoom") == 0){
             // format is "SearchUserAllJoinedRoom [uid]"
             auto info_res = retriveData(content, search_user_joined_info);
+            auto search_room_info = searchUserJoinedRoom(info_res[0]);
+            auto iter = search_room_info.begin();
+            string send_info("RoomSet");
+            while(iter != search_room_info.end()){
+                send_info = send_info + " ";
+                send_info = send_info + *iter;
+                iter++;
+            }
+            sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
         }
         else if (command.compare("Modify") == 0)
         {
