@@ -148,9 +148,9 @@ public:
         }
         else if (command.compare("SearchUserAllInfo") == 0)
         {
-            // format is "SendUserInfo [uid]"
+            // format is "SendUserInfo [uname]"
             auto info_res = retriveData(content, search_all_user_info);
-            auto search_user_info = searchAllOfPeople(info_res[0], 0);
+            auto search_user_info = searchAllOfPeople(info_res[0], 1);
             auto iter = search_user_info.begin();
             string send_info("PeopleInfo");
             while (iter != search_user_info.end())
@@ -172,6 +172,7 @@ public:
                 send_info = send_info + *iter;
                 iter++;
             }
+            send_info = send_info + "/";
             sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
         }
         else if (command.compare("Modify") == 0)
