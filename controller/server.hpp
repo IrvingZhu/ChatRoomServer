@@ -160,7 +160,7 @@ public:
                 send_info = send_info + *iter;
                 iter++;
             }
-            send_info = send_info + "/";
+            
             cout << send_info << endl;
 
             sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));

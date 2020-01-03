@@ -37,8 +37,9 @@ vector<string> searchUserJoinedRoom(const string &info){
 			mysql_query(con, "SET NAMES GBK"); // set code format
 
 			string s_query("select chatroomset.ChatName from chatroomset where ChatRID in (select peo_chat_r.ChatRID from peo_chat_r where peo_chat_r.uid = '");
-			string symbol("'\n");
+			string symbol("')\n");
 			s_query = s_query + info + symbol;
+			cout << "The select sentences is: " << s_query << endl;
 			strcpy(query, s_query.c_str());
 
 			// auto query = convertToNarrowChars(wquery);
