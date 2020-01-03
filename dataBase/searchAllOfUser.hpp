@@ -80,6 +80,7 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 				res = new MYSQL_RES;
 				res = mysql_store_result(con); // result
 				row = mysql_fetch_row(res);	// row is two dimension array.
+
 				int i = 0;
 				while (i < peo_table_element_num)
 				{
@@ -87,7 +88,12 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 					i++;
 					// row = mysql_fetch_row(res);
 				}
+
 				mysql_free_result(res);
+				for(auto iter = result.begin();iter != result.end(); iter++){
+					cout << *iter << " ";
+				}
+				cout << "\n" << endl;
 			}
 			return result;
 		}
