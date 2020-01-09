@@ -161,6 +161,7 @@ public:
                 iter++;
             }
             
+            send_info = send_info + "/";
             cout << send_info << endl;
 
             sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
@@ -177,6 +178,7 @@ public:
                 iter++;
             }
 
+            send_info = send_info + "/";
             cout << send_info << endl;
 
             sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
@@ -188,11 +190,11 @@ public:
             auto search_res = modifyPersonalInformation(info_res[0], info_res[1], info_res[2]);
             if (search_res == 1)
             {
-                sock->async_write_some(boost::asio::buffer("SuccessModify"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("SuccessModify/"), boost::bind(&server::start, this));
             }
             else
             {
-                sock->async_write_some(boost::asio::buffer("ErrorModify"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("ErrorModify/"), boost::bind(&server::start, this));
             }
         }
         else if (command.compare("ModPsw") == 0)
@@ -203,11 +205,11 @@ public:
 
             if (search_res == 1)
             {
-                sock->async_write_some(boost::asio::buffer("SuccessModPsw"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("SuccessModPsw/"), boost::bind(&server::start, this));
             }
             else
             {
-                sock->async_write_some(boost::asio::buffer("ErrorModPsw"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("ErrorModPsw/"), boost::bind(&server::start, this));
             }
         }
         else if (command.compare("CreateChatRoom") == 0)
@@ -238,7 +240,7 @@ public:
             if (ret_res_room > 0 && ret_res_rela > 0)
             {
                 // create success and join in.
-                sock->async_write_some(boost::asio::buffer("SuccessCre"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
+                sock->async_write_some(boost::asio::buffer("SuccessCre/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
                 chat_server_ptr server(new chat_server(sock, info_res[1]));
                 servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                 this->status = 1; //chat begin.
@@ -246,7 +248,7 @@ public:
             }
             else
             {
-                sock->async_write_some(boost::asio::buffer("ErrorCre"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("ErrorCre/"), boost::bind(&server::start, this));
             }
 
             delete[] room_query;
@@ -283,7 +285,7 @@ public:
                 // 3.jduge whether it is success.
                 if (cre_res == 1)
                 {
-                    sock->async_write_some(boost::asio::buffer("SuccessJoin"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
+                    sock->async_write_some(boost::asio::buffer("SuccessJoin/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
                     chat_server_ptr server(new chat_server(sock, info_res[1]));
                     servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                     this->status = 1;
@@ -291,14 +293,14 @@ public:
                 }
                 else
                 {
-                    sock->async_write_some(boost::asio::buffer("ErrorQuery"), boost::bind(&server::start, this));
+                    sock->async_write_some(boost::asio::buffer("ErrorQuery/"), boost::bind(&server::start, this));
                 }
 
                 delete[] rela_query;
             }
             else
             {
-                sock->async_write_some(boost::asio::buffer("ChatRoomNotExist"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("ChatRoomNotExist/"), boost::bind(&server::start, this));
             }
 
             delete[] query;
@@ -310,11 +312,11 @@ public:
             auto iter = servers.find(info_res[1]);
             if (iter == servers.end())
             {
-                sock->async_write_some(boost::asio::buffer("NotFindRoom"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("NotFindRoom/"), boost::bind(&server::start, this));
             }
             chat_server_ptr server(new chat_server(sock, info_res[0]));
             servers.insert(pair<string, chat_server_ptr>(iter->first, server));
-            sock->async_write_some(boost::asio::buffer("SuccessAccess"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
+            sock->async_write_some(boost::asio::buffer("SuccessAccess/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
             this->status = 1;
             this->start();
         }
@@ -341,11 +343,11 @@ public:
             auto this_server = iter->second;
             this_server->leave(info_res[0]);
 
-            sock->async_write_some(boost::asio::buffer("SuccessLeave"), boost::bind(&server::start, this));
+            sock->async_write_some(boost::asio::buffer("SuccessLeave/"), boost::bind(&server::start, this));
         }
         else
         {
-            sock->async_write_some(boost::asio::buffer("InfoError"), boost::bind(&server::start, this));
+            sock->async_write_some(boost::asio::buffer("InfoError/"), boost::bind(&server::start, this));
         }
     }
 };
