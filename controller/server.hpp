@@ -161,6 +161,7 @@ public:
                 iter++;
             }
             
+            send_info = send_info + "/";
             cout << send_info << endl;
 
             sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
@@ -177,6 +178,7 @@ public:
                 iter++;
             }
 
+            send_info = send_info + "/";
             cout << send_info << endl;
 
             sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
