@@ -92,7 +92,7 @@ public:
 
         if (posi > 1024)
         {
-            sock->async_write_some(boost::asio::buffer("InfoError"), boost::bind(&server::start, this));
+            sock->async_write_some(boost::asio::buffer("InfoError/"), boost::bind(&server::start, this));
             return;
         }
         auto command = comBuffer.substr(init_pos, posi - init_pos);
