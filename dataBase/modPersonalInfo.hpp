@@ -1,6 +1,5 @@
 #pragma once
 #include <iostream>
-// #include "../utility/convert/convertToNarrowChars.hpp"
 #include "mysql.h"
 // #pragma comment(lib, "libmysql.lib")
 #pragma comment(a, "libmysql.a")
