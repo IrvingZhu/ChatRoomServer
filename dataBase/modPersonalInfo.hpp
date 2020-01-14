@@ -55,14 +55,16 @@ int modifyPersonalInformation(const string &uid, const string &info, int type)
 			{
 				string s_query("update people set uname = '");
 
-				s_query = s_query + uid + s1 + info + s2;
+				s_query = s_query + info + s1 + uid + s2;
+				cout << "the query sentences is : " << s_query << "\n";
 				strcpy(query, s_query.c_str());
 			}
 			else if (type == 1)
 			{
 				string s_query("update people set upassword = '");
 
-				s_query = s_query + uid + s1 + info + s2;
+				s_query = s_query + info + s1 + uid + s2;
+				cout << "the query sentences is : " << s_query << "\n";
 				strcpy(query, s_query.c_str());
 			}
 			else
