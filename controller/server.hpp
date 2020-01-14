@@ -192,11 +192,11 @@ public:
             auto search_res = modifyPersonalInformation(info_res[0], info_res[1], 0);
             if (search_res == 1)
             {
-                sock->async_write_some(boost::asio::buffer("SuccessModify"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("SuccessModify/"), boost::bind(&server::start, this));
             }
             else
             {
-                sock->async_write_some(boost::asio::buffer("ErrorModify"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("ErrorModify/"), boost::bind(&server::start, this));
             }
         }
         else if (command.compare("ModPsw") == 0)
@@ -207,11 +207,11 @@ public:
 
             if (search_res == 1)
             {
-                sock->async_write_some(boost::asio::buffer("SuccessModPsw"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("SuccessModPsw/"), boost::bind(&server::start, this));
             }
             else
             {
-                sock->async_write_some(boost::asio::buffer("ErrorModPsw"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("ErrorModPsw/"), boost::bind(&server::start, this));
             }
         }
         else if (command.compare("CreateChatRoom") == 0)
