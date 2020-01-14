@@ -26,7 +26,7 @@
 
 using namespace std;
 
-int login_info = 2, register_info = 2, modify_info = 3, create_info = 3, join_info = 3, access_info = 2, chat_info = 3, leave_info = 2;
+int login_info = 2, register_info = 2, modify_uname = 2, modify_upsw = 2, create_info = 3, join_info = 3, access_info = 2, chat_info = 3, leave_info = 2;
 int search_all_user_info = 1, search_user_joined_info = 1;
 
 typedef std::shared_ptr<boost::asio::ip::tcp::socket> sock_ptr;
@@ -160,19 +160,21 @@ public:
                 send_info = send_info + *iter;
                 iter++;
             }
-            
+
             send_info = send_info + "/";
             cout << send_info << endl;
 
             sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
         }
-        else if (command.compare("SearchUserAllJoinedRoom") == 0){
+        else if (command.compare("SearchUserAllJoinedRoom") == 0)
+        {
             // format is "SearchUserAllJoinedRoom [uid]"
             auto info_res = retriveData(content, search_user_joined_info);
             auto search_room_info = searchUserJoinedRoom(info_res[0]);
             auto iter = search_room_info.begin();
             string send_info("RoomSet");
-            while(iter != search_room_info.end()){
+            while (iter != search_room_info.end())
+            {
                 send_info = send_info + " ";
                 send_info = send_info + *iter;
                 iter++;
@@ -185,9 +187,9 @@ public:
         }
         else if (command.compare("Modify") == 0)
         {
-            // format is "Modify [newUid] [newUname] [newPsw]"
-            auto info_res = retriveData(content, modify_info);
-            auto search_res = modifyPersonalInformation(info_res[0], info_res[1], info_res[2]);
+            // format is "Modify [Uid] [Uname]"
+            auto info_res = retriveData(content, modify_uname);
+            auto search_res = modifyPersonalInformation(info_res[0], info_res[1], 0);
             if (search_res == 1)
             {
                 sock->async_write_some(boost::asio::buffer("SuccessModify"), boost::bind(&server::start, this));
@@ -199,9 +201,9 @@ public:
         }
         else if (command.compare("ModPsw") == 0)
         {
-            // format is "ModPsw [Uid] [Uname] [password]"
-            auto info_res = retriveData(content, modify_info);
-            auto search_res = modifyPersonalInformation(info_res[0], info_res[1], info_res[2]);
+            // format is "ModPsw [Uid] [password]"
+            auto info_res = retriveData(content, modify_upsw);
+            auto search_res = modifyPersonalInformation(info_res[0], info_res[1], 1);
 
             if (search_res == 1)
             {
