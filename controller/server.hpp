@@ -287,7 +287,7 @@ public:
                 // 3.jduge whether it is success.
                 if (cre_res == 1)
                 {
-                    sock->async_write_some(boost::asio::buffer("SuccessJoin"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
+                    sock->async_write_some(boost::asio::buffer("SuccessJoin/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
                     chat_server_ptr server(new chat_server(sock, info_res[1]));
                     servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                     this->status = 1;
@@ -295,14 +295,14 @@ public:
                 }
                 else
                 {
-                    sock->async_write_some(boost::asio::buffer("ErrorQuery"), boost::bind(&server::start, this));
+                    sock->async_write_some(boost::asio::buffer("ErrorQuery/"), boost::bind(&server::start, this));
                 }
 
                 delete[] rela_query;
             }
             else
             {
-                sock->async_write_some(boost::asio::buffer("ChatRoomNotExist"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("ChatRoomNotExist/"), boost::bind(&server::start, this));
             }
 
             delete[] query;
