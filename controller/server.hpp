@@ -242,7 +242,7 @@ public:
             if (ret_res_room > 0 && ret_res_rela > 0)
             {
                 // create success and join in.
-                sock->async_write_some(boost::asio::buffer("SuccessCre"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
+                sock->async_write_some(boost::asio::buffer("SuccessCre/"), boost::bind(&server::start, this));
                 chat_server_ptr server(new chat_server(sock, info_res[1]));
                 servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                 this->status = 1; //chat begin.
@@ -250,7 +250,7 @@ public:
             }
             else
             {
-                sock->async_write_some(boost::asio::buffer("ErrorCre"), boost::bind(&server::start, this));
+                sock->async_write_some(boost::asio::buffer("ErrorCre/"), boost::bind(&server::start, this));
             }
 
             delete[] room_query;
@@ -287,7 +287,7 @@ public:
                 // 3.jduge whether it is success.
                 if (cre_res == 1)
                 {
-                    sock->async_write_some(boost::asio::buffer("SuccessJoin/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
+                    sock->async_write_some(boost::asio::buffer("SuccessJoin/"), boost::bind(&server::start, this));
                     chat_server_ptr server(new chat_server(sock, info_res[1]));
                     servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                     this->status = 1;
