@@ -243,10 +243,6 @@ public:
             {
                 // create success and join in.
                 sock->async_write_some(boost::asio::buffer("SuccessCre/"), boost::bind(&server::start, this));
-                chat_server_ptr server(new chat_server(sock, info_res[1]));
-                servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
-                this->status = 1; //chat begin.
-                this->start();
             }
             else
             {
@@ -265,12 +261,14 @@ public:
             char *query = new char[64];
             memset(query, 0, strlen(query));
 
-            string s_query("select ChatID from chatroomset where ChatName = '");
+            string s_query("select ChatRID from chatroomset where ChatName = '");
             string symbol("'\n");
             s_query = s_query + info_res[2] + symbol;
 
             strcpy(query, s_query.c_str());
             auto search_res = selfDefineQuery(query, 1, 1);
+            cout << "the res is: " << search_res[0] << "\n";
+            auto chatRID = search_res[0];
 
             if (!search_res.empty())
             {
@@ -282,16 +280,12 @@ public:
 
                 // 2.add this relation into rela table
                 auto Rela_ID_S = getNextKey(search_res[0]);
-                int cre_res = createRela(Rela_ID_S, info_res[0], search_res[0]);
+                int cre_res = createRela(Rela_ID_S, info_res[0], chatRID);
 
                 // 3.jduge whether it is success.
                 if (cre_res == 1)
                 {
                     sock->async_write_some(boost::asio::buffer("SuccessJoin/"), boost::bind(&server::start, this));
-                    chat_server_ptr server(new chat_server(sock, info_res[1]));
-                    servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
-                    this->status = 1;
-                    this->start();
                 }
                 else
                 {

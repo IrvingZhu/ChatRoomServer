@@ -42,6 +42,7 @@ int createRela(const string &ID, const string &UID, const string &ChatID)
 			string symbol_1("','");
 			string symbol_2("')");
             s_query = s_query + ID + symbol_1 + UID + symbol_1 + ChatID + symbol_2;
+            cout << "the query sentences is: " << s_query << "\n";
             strcpy(query, s_query.c_str());              
             // auto query = convertToNarrowChars(wquery);
             rt = mysql_real_query(con, query, strlen(query)); // qurey result
