@@ -255,7 +255,7 @@ public:
         // long connect part
         else if (command.compare("JoinNewChatRoom") == 0)
         {
-            // format is "JoinNewChatRoom [UID] [Uname] [ChatName]"
+            // format is "JoinNewChatRoom [UID] [Uname] [RoomName]"
             auto info_res = retriveData(content, join_info);
 
             char *query = new char[64];
