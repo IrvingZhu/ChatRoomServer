@@ -7,13 +7,13 @@
 // #pragma comment(lib, "libmysql.lib")
 #pragma comment(a, "libmysql.a")
 
-std::vector<std::string> selfDefineQuery(char *wquery, int ret_record, int para)
+std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, int para)
 {
 
     // ret_record is the number of the tuple of return res in the database query.
     // para is the number of the tuple's component in each row.
 
-    std::vector<std::string> result;
+    std::vector<vector<std::string>> result;
 
     MYSQL *con;
     MYSQL_RES *res;
@@ -62,16 +62,14 @@ std::vector<std::string> selfDefineQuery(char *wquery, int ret_record, int para)
                         break;
                     ret_count++;
 
-                    std::string each_res;
                     vector<std::string> each_per_res;
                     para_count = 0; // initial three variable
                     while (para_count < para)
                     {
                         each_per_res.push_back(row[para_count]);
-                        each_res = each_res + each_per_res[para_count];
                         para_count++;
                     }
-                    result.push_back(each_res);
+                    result.push_back(each_per_res);
                 }
                 mysql_free_result(res);
             }

@@ -131,7 +131,7 @@ public:
             strcpy(people_query, "select uid from people order by uid desc");
 
             auto uid_res = selfDefineQuery(people_query, 1, 1); // has a fault
-            auto uid = getNextKey(uid_res[0]);                  // has a fault
+            auto uid = getNextKey(uid_res[0][0]);               // has a fault
 
             auto search_res = registerUser(uid, info_res[0], info_res[1]);
 
@@ -225,7 +225,7 @@ public:
             strcpy(rela_query, "select id from peo_chat_r order by id desc");
             auto search_res = selfDefineQuery(rela_query, 1, 1);
 
-            auto rela_id_res = getNextKey(search_res[0]);
+            auto rela_id_res = getNextKey(search_res[0][0]);
 
             // second,query chatroomset to find last chatid.
             char *room_query = new char[64];
@@ -233,7 +233,7 @@ public:
             strcpy(room_query, "select ChatRID from chat_room_set order by ChatRID desc");
             search_res = selfDefineQuery(room_query, 1, 1);
 
-            auto room_id_res = getNextKey(search_res[0]);
+            auto room_id_res = getNextKey(search_res[0][0]);
 
             // thrid,add infomation into database
             int ret_res_room = createChatRoom(room_id_res, rela_id_res);
@@ -267,29 +267,47 @@ public:
 
             strcpy(query, s_query.c_str());
             auto search_res = selfDefineQuery(query, 1, 1);
-            cout << "the res is: " << search_res[0] << "\n";
-            auto chatRID = search_res[0];
+            cout << "the res is: " << search_res[0][0] << "\n";
+            auto chatRID = search_res[0][0];
 
-            if (!search_res.empty())
+            if (!search_res[0].empty())
             {
-                // 1.search id desc from rela table
+                // search exist
+                string exist_query("select id from peo_chat_r where uid = '");
+                exist_query = exist_query + info_res[0] + "' and ChatRID in (select chatRID from chatroomset where ChatName = '" + info_res[2] + "')";
+                cout << "the query sentences is: " << exist_query << "\n";
+
                 char *rela_query = new char[64];
                 memset(rela_query, 0, strlen(rela_query));
-                strcpy(rela_query, "select id from peo_chat_r order by id desc");
-                auto search_res = selfDefineQuery(rela_query, 1, 1);
+                strcpy(rela_query, exist_query.c_str());
 
-                // 2.add this relation into rela table
-                auto Rela_ID_S = getNextKey(search_res[0]);
-                int cre_res = createRela(Rela_ID_S, info_res[0], chatRID);
-
-                // 3.jduge whether it is success.
-                if (cre_res == 1)
+                auto result_set = selfDefineQuery(rela_query, 1, 1);
+                if (result_set[0][0].size() != 0)
                 {
+                    cout << "Exist joined, return SuccessJoin"
+                         << "\n";
                     sock->async_write_some(boost::asio::buffer("SuccessJoin/"), boost::bind(&server::start, this));
                 }
                 else
                 {
-                    sock->async_write_some(boost::asio::buffer("ErrorQuery/"), boost::bind(&server::start, this));
+                    // 1.search id desc from rela table
+                    memset(rela_query, 0, strlen(rela_query));
+                    strcpy(rela_query, "select id from peo_chat_r order by id desc");
+                    auto search_res = selfDefineQuery(rela_query, 1, 1);
+
+                    // 2.add this relation into rela table
+                    auto Rela_ID_S = getNextKey(search_res[0][0]);
+                    int cre_res = createRela(Rela_ID_S, info_res[0], chatRID);
+
+                    // 3.jduge whether it is success.
+                    if (cre_res == 1)
+                    {
+                        sock->async_write_some(boost::asio::buffer("SuccessJoin/"), boost::bind(&server::start, this));
+                    }
+                    else
+                    {
+                        sock->async_write_some(boost::asio::buffer("ErrorQuery/"), boost::bind(&server::start, this));
+                    }
                 }
 
                 delete[] rela_query;
