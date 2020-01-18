@@ -56,8 +56,9 @@ int searchLogin(const string &uname, const string &upassword)
 				res = mysql_store_result(con); // result
 				row = mysql_fetch_row(res);
 
-				if (!row)
+				if (!row){
 					return 0;
+				}
 
 				auto srcomp = upassword.c_str();
 				if (!strcmp(row[0], srcomp))

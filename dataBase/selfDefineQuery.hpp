@@ -23,7 +23,8 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
     char dbuser[32] = "root";
     char dbpasswd[32] = "root";
     char dbname[32] = "chatroom";
-    char *mquery = new char[512];
+    // char *mquery = new char[512];
+    char mquery[512];
     memset(mquery, 0, strlen(mquery));
     strcpy(mquery, wquery);
 
@@ -31,7 +32,7 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
 
     int count = 0;
 
-    con = mysql_init((MYSQL *)0); //connect
+	con = mysql_init((MYSQL *)0); //connect
 
     if (con != NULL && mysql_real_connect(con, dbip, dbuser, dbpasswd, dbname, 3306, NULL, 0))
     { // connect

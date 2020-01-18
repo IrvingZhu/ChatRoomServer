@@ -229,7 +229,7 @@ public:
             strcpy(rela_query, exist_query.c_str());
 
             auto result_set = selfDefineQuery(rela_query, 1, 1);
-            if (result_set[0][0].size() != 0)
+            if (result_set.empty() == false)
             {
                 cout << "Exist chatroom, cannot to create"
                      << "\n";
