@@ -165,6 +165,7 @@ public:
             cout << send_info << endl;
 
             sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
+            cout << "send successful" << endl;
         }
         else if (command.compare("SearchUserAllJoinedRoom") == 0)
         {
@@ -224,8 +225,8 @@ public:
             exist_query = exist_query + info_res[0] + "' and ChatRID in (select chatRID from chatroomset where ChatName = '" + info_res[2] + "')";
             cout << "the query sentences is: " << exist_query << "\n";
 
-            char *rela_query = new char[64];
-            memset(rela_query, 0, strlen(rela_query));
+            char rela_query[64];
+            memset(rela_query, 0, 64*sizeof(char));
             strcpy(rela_query, exist_query.c_str());
 
             auto result_set = selfDefineQuery(rela_query, 1, 1);
@@ -245,7 +246,7 @@ public:
                 auto rela_id_res = getNextKey(search_res[0][0]);
 
                 // second,query chatroomset to find last chatid.
-                char *room_query = new char[64];
+                char room_query[64];
                 memset(room_query, 0, strlen(room_query));
                 strcpy(room_query, "select ChatRID from chatroomset order by ChatRID desc");
                 search_res = selfDefineQuery(room_query, 1, 1);
@@ -265,10 +266,7 @@ public:
                 {
                     sock->async_write_some(boost::asio::buffer("ErrorCre/"), boost::bind(&server::start, this));
                 }
-
-                delete[] room_query;
             }
-            delete[] rela_query;
         }
         // long connect part
         else if (command.compare("JoinNewChatRoom") == 0)
