@@ -274,7 +274,7 @@ public:
             // format is "JoinNewChatRoom [UID] [Uname] [RoomName]"
             auto info_res = retriveData(content, join_info);
 
-            char *query = new char[64];
+            char query[64];
             memset(query, 0, strlen(query));
 
             string s_query("select ChatRID from chatroomset where ChatName = '");
@@ -293,7 +293,7 @@ public:
                 exist_query = exist_query + info_res[0] + "' and ChatRID in (select chatRID from chatroomset where ChatName = '" + info_res[2] + "')";
                 cout << "the query sentences is: " << exist_query << "\n";
 
-                char *rela_query = new char[64];
+                char rela_query[64];
                 memset(rela_query, 0, strlen(rela_query));
                 strcpy(rela_query, exist_query.c_str());
 
@@ -325,15 +325,11 @@ public:
                         sock->async_write_some(boost::asio::buffer("ErrorQuery/"), boost::bind(&server::start, this));
                     }
                 }
-
-                delete[] rela_query;
             }
             else
             {
                 sock->async_write_some(boost::asio::buffer("ChatRoomNotExist/"), boost::bind(&server::start, this));
             }
-
-            delete[] query;
         }
         else if (command.compare("AccessChatRoom") == 0)
         {
