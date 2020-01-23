@@ -339,7 +339,7 @@ public:
 
             chat_server_ptr server(new chat_server(sock, info_res[0]));
             servers.insert(pair<string, chat_server_ptr>(iter->first, server));
-            sock->async_write_some(boost::asio::buffer("SuccessAccess"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
+            sock->async_write_some(boost::asio::buffer("SuccessAccess/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
             this->status = 1;
             this->start();
         }
@@ -366,11 +366,11 @@ public:
             auto this_server = iter->second;
             this_server->leave(info_res[0]);
 
-            sock->async_write_some(boost::asio::buffer("SuccessLeave"), boost::bind(&server::start, this));
+            sock->async_write_some(boost::asio::buffer("SuccessLeave/"), boost::bind(&server::start, this));
         }
         else
         {
-            sock->async_write_some(boost::asio::buffer("InfoError"), boost::bind(&server::start, this));
+            sock->async_write_some(boost::asio::buffer("InfoError/"), boost::bind(&server::start, this));
         }
     }
 };
