@@ -226,7 +226,7 @@ public:
             cout << "the query sentences is: " << exist_query << "\n";
 
             char rela_query[64];
-            memset(rela_query, 0, 64*sizeof(char));
+            memset(rela_query, 0, 64 * sizeof(char));
             strcpy(rela_query, exist_query.c_str());
 
             auto result_set = selfDefineQuery(rela_query, 1, 1);
@@ -333,12 +333,20 @@ public:
         }
         else if (command.compare("AccessChatRoom") == 0)
         {
-            // format is "AccessChatRoom [UserName] [ChatName]"
+            // format is "AccessChatRoom [UserName] [ChatRoomName]"
             auto info_res = retriveData(content, access_info);
-            auto iter = servers.find(info_res[1]);
+            auto iter = servers.find(info_res[1]); // iter is <ChatRoom, server> pair
 
-            chat_server_ptr server(new chat_server(sock, info_res[0]));
-            servers.insert(pair<string, chat_server_ptr>(iter->first, server));
+            if (iter == servers.end())
+            {
+                chat_server_ptr server = std::make_shared<chat_server>(sock, info_res[0]);
+                servers.insert(pair<string, chat_server_ptr>(iter->first, server));
+            }
+            else
+            {
+                iter->second->start_chat(info_res[0]);
+            }
+
             sock->async_write_some(boost::asio::buffer("SuccessAccess/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
             this->status = 1;
             this->start();

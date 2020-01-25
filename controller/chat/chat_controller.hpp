@@ -74,7 +74,7 @@ class chat_session
       public std::enable_shared_from_this<chat_session>
 {
 public:
-    chat_session(std::shared_ptr<boost::asio::ip::tcp::socket> &socket, chat_room &room, const std::string &UserName)
+    chat_session(std::shared_ptr<boost::asio::ip::tcp::socket> socket, chat_room &room, const std::string &UserName)
         : socket_(socket),
           room_(room),
           UName(UserName)
@@ -128,7 +128,7 @@ public:
     }
 
 private:
-    std::shared_ptr<boost::asio::ip::tcp::socket> &socket_;
+    std::shared_ptr<boost::asio::ip::tcp::socket> socket_;
     chat_room &room_; // only this room,belong to room
     std::string UName;
     chat_message_queue write_msgs_;
@@ -139,7 +139,7 @@ typedef std::shared_ptr<chat_session> chat_session_ptr;
 class chat_server
 {
 public:
-    chat_server(std::shared_ptr<boost::asio::ip::tcp::socket> &sock, const std::string &UserName)
+    chat_server(std::shared_ptr<boost::asio::ip::tcp::socket> sock, std::string UserName)
         : sock_(sock)
     {
         start_chat(UserName);
@@ -168,7 +168,7 @@ public:
     }
 
 private:
-    std::shared_ptr<boost::asio::ip::tcp::socket> &sock_;
+    std::shared_ptr<boost::asio::ip::tcp::socket> sock_;
     chat_room room_; // server has room
 };
 
