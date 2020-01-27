@@ -339,12 +339,8 @@ public:
 
             if (iter == servers.end())
             {
-                chat_server_ptr server = std::make_shared<chat_server>(sock, info_res[0]);
-                servers.insert(pair<string, chat_server_ptr>(iter->first, server));
-            }
-            else
-            {
-                iter->second->start_chat(info_res[0]);
+                chat_server_ptr server = std::make_shared<chat_server>();
+                servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
             }
 
             sock->async_write_some(boost::asio::buffer("SuccessAccess/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
@@ -361,20 +357,10 @@ public:
             auto this_server = iter->second;
 
             // size jduge is client things
-            this_server->send(info_res[1], info_res[2]);
+            this_server->send(sock, info_res[1], info_res[2]);
 
             // have not send some infomation to client,because it is chat status.
             this->start();
-        }
-        else if (command.compare("Leave") == 0 && this->status == 1)
-        {
-            //format: "Leave [UserName] [ChatRoom]"
-            auto info_res = retriveData(content, leave_info);
-            auto iter = servers.find(info_res[1]);
-            auto this_server = iter->second;
-            this_server->leave(info_res[0]);
-
-            sock->async_write_some(boost::asio::buffer("SuccessLeave/"), boost::bind(&server::start, this));
         }
         else
         {
@@ -384,3 +370,4 @@ public:
 };
 
 typedef std::shared_ptr<server> main_server_ptr;
+typedef std::map<std::string, chat_server_ptr>  chat_server_map;

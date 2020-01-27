@@ -15,164 +15,66 @@
 using boost::asio::ip::tcp;
 
 typedef std::deque<chat_message> chat_message_queue;
+typedef std::shared_ptr<boost::asio::ip::tcp::socket> sock_ptr;
 
-class chat_participant
+class chat_server : enable_shared_from_this<chat_server>
 {
+    chat_message_queue this_queue;
+
 public:
-    virtual ~chat_participant() {}
-    virtual void deliver(const chat_message &msg) = 0;
+    chat_server();
+    ~chat_server();
+    void send(const sock_ptr &sock, const std::string &UserName, const std::string &send_info);
+    void push(const std::string &userName, const std::string &send_info);
+    void handle_write(const sock_ptr &sock, const boost::system::error_code &error);
 };
 
-typedef std::shared_ptr<chat_participant> chat_participant_ptr;
+chat_server::chat_server() {}
 
-class chat_room
+chat_server::~chat_server() {}
+
+void chat_server::send(const sock_ptr &sock, const std::string &UserName, const std::string &send_info)
 {
-public:
-    void join(const std::string &UserName, chat_participant_ptr participant)
+    // before weite_msgs_ empty,push your message to the queue
+    bool write_in_progress = !this->this_queue.empty();
+    this->push(UserName, send_info);
+    if (!write_in_progress)
     {
-        // for this part,participant will join the chatroom queue
-        participants_.insert(std::pair<std::string, chat_participant_ptr>(UserName, participant));
-        std::for_each(recent_msgs_.begin(), recent_msgs_.end(),
-                      boost::bind(&chat_participant::deliver, participant, _1));
+        sock->async_write_some(boost::asio::buffer(this->this_queue.front().data(),
+                                                   this->this_queue.front().length()),
+                               boost::bind(&chat_server::send, shared_from_this(), sock,
+                                           boost::asio::placeholders::error));
     }
+}
 
-    void leave(const std::string &UserName)
-    {
-        auto iter = participants_.find(UserName);
-        participants_.erase(iter);
-    }
-
-    void deliver(const chat_message &msg)
-    {
-        //max message is not over 100
-        recent_msgs_.push_back(msg);
-        while (recent_msgs_.size() > max_recent_msgs)
-            recent_msgs_.pop_front();
-
-        for (auto iter = participants_.begin(); iter != participants_.end(); iter++)
-        {
-            boost::bind(&chat_participant::deliver, _1, boost::ref(msg));
-        }
-    }
-
-    chat_participant_ptr findSession(const string &UserName)
-    {
-        return participants_.find(UserName)->second;
-    }
-
-private:
-    std::map<std::string, chat_participant_ptr> participants_; // has some participants.
-    enum
-    {
-        max_recent_msgs = 100
-    };
-    chat_message_queue recent_msgs_;
-};
-
-class chat_session
-    : public chat_participant,
-      public std::enable_shared_from_this<chat_session>
+void chat_server::push(const std::string &userName, const std::string &send_info)
 {
-public:
-    chat_session(std::shared_ptr<boost::asio::ip::tcp::socket> socket, chat_room &room, const std::string &UserName)
-        : socket_(socket),
-          room_(room),
-          UName(UserName)
-    {
-        this->start(UserName);
-    }
+    chat_message msg;
+    auto p_info = send_info.c_str();
+    msg.encode_user(userName);
+    auto sp_info = msg.body();
+    strcpy(sp_info, p_info); //construct the send_info.
 
-    std::shared_ptr<boost::asio::ip::tcp::socket> &socket()
-    {
-        return socket_;
-    }
+    this->this_queue.push_back(msg);
+}
 
-    void start(const std::string &UserName)
-    {
-        // begin start,receive the message.
-        room_.join(UserName, std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
-    }
-
-    void deliver(const chat_message &msg)
-    {
-        // before weite_msgs_ empty,push your message to the queue
-        bool write_in_progress = !write_msgs_.empty();
-        write_msgs_.push_back(msg);
-        if (!write_in_progress)
-        {
-            this->socket_->async_write_some(boost::asio::buffer(write_msgs_.front().data(),
-                                                                write_msgs_.front().length()),
-                                            boost::bind(&chat_session::handle_write, shared_from_this(),
-                                                        boost::asio::placeholders::error));
-        }
-    }
-
-    void handle_write(const boost::system::error_code &error)
-    {
-        if (!error)
-        {
-            write_msgs_.pop_front();
-            if (!write_msgs_.empty())
-            {
-                this->socket_->async_write_some(boost::asio::buffer(write_msgs_.front().data(),
-                                                                    write_msgs_.front().length()),
-                                                boost::bind(&chat_session::handle_write, shared_from_this(),
-                                                            boost::asio::placeholders::error));
-            }
-        }
-        else
-        {
-
-            room_.leave(this->UName);
-        }
-    }
-
-private:
-    std::shared_ptr<boost::asio::ip::tcp::socket> socket_;
-    chat_room &room_; // only this room,belong to room
-    std::string UName;
-    chat_message_queue write_msgs_;
-};
-
-typedef std::shared_ptr<chat_session> chat_session_ptr;
-
-class chat_server
+void chat_server::handle_write(const sock_ptr &sock, const boost::system::error_code &error)
 {
-public:
-    chat_server(std::shared_ptr<boost::asio::ip::tcp::socket> sock, std::string UserName)
-        : sock_(sock)
+    if (!error)
     {
-        start_chat(UserName);
+        this->this_queue.pop_front();
+        if (!this->this_queue.empty())
+        {
+            sock->async_write_some(boost::asio::buffer(this->this_queue.front().data(),
+                                                       this->this_queue.front().length()),
+                                   boost::bind(&chat_server::handle_write, shared_from_this(), sock,
+                                               boost::asio::placeholders::error));
+        }
     }
-
-    void start_chat(const std::string &UserName) // if you want to add a room of session,you can use this function.
+    else
     {
-        chat_session_ptr new_session(new chat_session(this->sock_, room_, UserName));
+        return;
     }
-
-    void send(const string &UserName, const string &Info)
-    {
-        chat_message send_info;
-        auto p_info = Info.c_str();
-        send_info.encode_user(UserName);
-        auto sp_info = send_info.body();
-        strcpy(sp_info, p_info); //construct the send_info.
-
-        auto participant = std::dynamic_pointer_cast<chat_session>(room_.findSession(UserName));
-        participant->deliver(send_info);
-    }
-
-    void leave(const string &UserName)
-    {
-        room_.leave(UserName);
-    }
-
-private:
-    std::shared_ptr<boost::asio::ip::tcp::socket> sock_;
-    chat_room room_; // server has room
-};
+}
 
 typedef std::shared_ptr<chat_server> chat_server_ptr;
-typedef std::map<std::string, chat_server_ptr> chat_server_map;
-
-// has one room,one server,but can has no limit of session.
