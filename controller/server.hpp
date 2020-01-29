@@ -5,19 +5,16 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-#include "../database/searchLogin.hpp"
-#include "../database/searchAllOfUser.hpp"
-#include "../database/registerUser.hpp"
-#include "../database/modPersonalInfo.hpp"
-#include "../database/createChatRoom.hpp"
-#include "../database/selfDefineQuery.hpp"
-#include "../database/createRela.hpp"
-#include "../dataBase/searchUserJoinedRoom.hpp"
 #include "../utility/retriveData/retriveData.hpp"
 #include "../utility/convert/convert.hpp"
-#include "../utility/stringHandle/stringHandle.hpp"
 #include "./chat/chat_controller.hpp"
 #include "./chat/chat_message.hpp"
+#include "./read_handler/login.hpp"
+#include "./read_handler/register.hpp"
+#include "./read_handler/userabout.hpp"
+#include "./read_handler/modityabout.hpp"
+#include "./read_handler/createroom.hpp"
+#include "./read_handler/joinroom.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -26,10 +23,10 @@
 
 using namespace std;
 
-int login_info = 2, register_info = 2, modify_uname = 2, modify_upsw = 2, create_info = 3, join_info = 3, access_info = 2, chat_info = 3, leave_info = 2;
-int search_all_user_info = 1, search_user_joined_info = 1;
+int login_info = 2, register_info = 2, modify_about_info = 2, create_info = 3, join_info = 3, access_info = 2, chat_info = 3, user_about_info = 1;
 
 typedef std::shared_ptr<boost::asio::ip::tcp::socket> sock_ptr;
+typedef std::map<std::string, chat_server_ptr> chat_server_map;
 
 class server
 {
@@ -45,16 +42,14 @@ private:
 
 public:
     explicit server(boost::asio::io_service &io) : ios(io),
-                                                   acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8888)),
+                                                   acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8902)),
                                                    status(0)
     {
         memset(this->buffer, 0, strlen(buffer));
         start();
     }
 
-    ~server()
-    {
-    }
+    ~server() {}
 
     void start()
     {
@@ -79,263 +74,52 @@ public:
     {
         int init_pos = 0;
         std::string comBuffer(this->buffer);
-        cout << comBuffer << "\n"
-             << endl;
+        cout << comBuffer << "\n";
 
         memset(this->buffer, 0, strlen(this->buffer));
 
-        wstring output_to_terminal(convertToWString(comBuffer));
-        wcout << "command Buffer content is :" << output_to_terminal << '\n';
-
         auto posi = comBuffer.find(" ");
-        cout << "the blank position in the:" << posi << endl; // has no problem 2019.12.18
 
         if (posi > 1024)
         {
             sock->async_write_some(boost::asio::buffer("InfoError/"), boost::bind(&server::start, this));
             return;
         }
+
         auto command = comBuffer.substr(init_pos, posi - init_pos);
         auto content = comBuffer.substr(posi + 1);
 
-        // for all,if return integer,true is return 1,false is 0
-
         if (command.compare("Login") == 0)
         {
-            // format is "Login [uname] [upassword]"
-            auto info_res = retriveData(content, login_info);
-            auto search_res = searchLogin(info_res[0], info_res[1]);
-
-            if (search_res == 1)
-            {
-                sock->async_write_some(boost::asio::buffer("SuccessLogin/"), boost::bind(&server::start, this));
-            }
-            // boost::bind(&func,para1,para2,para3,...)
-            // in this,para is a sequence of func's parameter.
-            // but you want to set a placeholder,you can use
-            // _n to set them,which n is sequence of that after
-            // bind,and '_n' in what place,it replace that place's
-            // parameter.
-            else
-            {
-                sock->async_write_some(boost::asio::buffer("ErrorLogin/"), boost::bind(&server::start, this));
-            }
+            Login(content, login_info, sock);
         }
         else if (command.compare("Register") == 0)
         {
-            // format is "Register [uname] [upassword]"
-            auto info_res = retriveData(content, register_info);
-
-            char *people_query = new char[64];
-            memset(people_query, 0, strlen(people_query));
-            strcpy(people_query, "select uid from people order by uid desc");
-
-            auto uid_res = selfDefineQuery(people_query, 1, 1); // has a fault
-            auto uid = getNextKey(uid_res[0][0]);               // has a fault
-
-            auto search_res = registerUser(uid, info_res[0], info_res[1]);
-
-            if (search_res == 1)
-            {
-                sock->async_write_some(boost::asio::buffer("SuccessRegister/"), boost::bind(&server::start, this));
-            }
-            else
-            {
-                sock->async_write_some(boost::asio::buffer("ErrorRegister/"), boost::bind(&server::start, this));
-            }
-
-            delete[] people_query;
+            Register_user(content, login_info, sock);
         }
-        else if (command.compare("SearchUserAllInfo") == 0)
+        else if (command.compare("SearchUserAllInfo") == 0 || command.compare("SearchUserAllJoinedRoom") == 0)
         {
-            // format is "SendUserInfo [uname]"
-            auto info_res = retriveData(content, search_all_user_info);
-            auto search_user_info = searchAllOfPeople(info_res[0], 1);
-            auto iter = search_user_info.begin();
-
-            string send_info("PeopleInfo");
-            while (iter != search_user_info.end())
-            {
-                send_info = send_info + " ";
-                send_info = send_info + *iter;
-                iter++;
-            }
-
-            send_info = send_info + "/";
-            cout << send_info << endl;
-
-            sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
-            cout << "send successful" << endl;
+            userAbout(content, command, user_about_info, sock);
         }
-        else if (command.compare("SearchUserAllJoinedRoom") == 0)
+        else if (command.compare("Modify") == 0 || command.compare("ModPsw") == 0)
         {
-            // format is "SearchUserAllJoinedRoom [uid]"
-            auto info_res = retriveData(content, search_user_joined_info);
-            auto search_room_info = searchUserJoinedRoom(info_res[0]);
-            auto iter = search_room_info.begin();
-            string send_info("RoomSet");
-            while (iter != search_room_info.end())
-            {
-                send_info = send_info + " ";
-                send_info = send_info + *iter;
-                iter++;
-            }
-
-            send_info = send_info + "/";
-            cout << send_info << endl;
-
-            sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&server::start, this));
-        }
-        else if (command.compare("Modify") == 0)
-        {
-            // format is "Modify [Uid] [Uname]"
-            auto info_res = retriveData(content, modify_uname);
-            auto search_res = modifyPersonalInformation(info_res[0], info_res[1], 0);
-            if (search_res == 1)
-            {
-                sock->async_write_some(boost::asio::buffer("SuccessModify/"), boost::bind(&server::start, this));
-            }
-            else
-            {
-                sock->async_write_some(boost::asio::buffer("ErrorModify/"), boost::bind(&server::start, this));
-            }
-        }
-        else if (command.compare("ModPsw") == 0)
-        {
-            // format is "ModPsw [Uid] [password]"
-            auto info_res = retriveData(content, modify_upsw);
-            auto search_res = modifyPersonalInformation(info_res[0], info_res[1], 1);
-
-            if (search_res == 1)
-            {
-                sock->async_write_some(boost::asio::buffer("SuccessModPsw/"), boost::bind(&server::start, this));
-            }
-            else
-            {
-                sock->async_write_some(boost::asio::buffer("ErrorModPsw/"), boost::bind(&server::start, this));
-            }
+            modifyAbout(content, command, modify_about_info, sock);
         }
         else if (command.compare("CreateChatRoom") == 0)
         {
-            // format is "CreateChatRoom [UID] [UName] [RoomName]"
-            auto info_res = retriveData(content, create_info);
-
-            // search exist
-            string exist_query("select id from peo_chat_r where uid = '");
-            exist_query = exist_query + info_res[0] + "' and ChatRID in (select chatRID from chatroomset where ChatName = '" + info_res[2] + "')";
-            cout << "the query sentences is: " << exist_query << "\n";
-
-            char rela_query[64];
-            memset(rela_query, 0, 64 * sizeof(char));
-            strcpy(rela_query, exist_query.c_str());
-
-            auto result_set = selfDefineQuery(rela_query, 1, 1);
-            if (result_set.empty() == false)
-            {
-                cout << "Exist chatroom, cannot to create"
-                     << "\n";
-                sock->async_write_some(boost::asio::buffer("ErrorCre/"), boost::bind(&server::start, this));
-            }
-            else
-            {
-                // first,query rela table to find last id.
-                memset(rela_query, 0, strlen(rela_query));
-                strcpy(rela_query, "select id from peo_chat_r order by id desc");
-                auto search_res = selfDefineQuery(rela_query, 1, 1);
-
-                auto rela_id_res = getNextKey(search_res[0][0]);
-
-                // second,query chatroomset to find last chatid.
-                char room_query[64];
-                memset(room_query, 0, strlen(room_query));
-                strcpy(room_query, "select ChatRID from chatroomset order by ChatRID desc");
-                search_res = selfDefineQuery(room_query, 1, 1);
-
-                auto room_id_res = getNextKey(search_res[0][0]);
-
-                // thrid,add infomation into database
-                int ret_res_room = createChatRoom(room_id_res, info_res[2]);
-                int ret_res_rela = createRela(rela_id_res, info_res[0], room_id_res);
-
-                if (ret_res_room > 0 && ret_res_rela > 0)
-                {
-                    // create success and join in.
-                    sock->async_write_some(boost::asio::buffer("SuccessCre/"), boost::bind(&server::start, this));
-                }
-                else
-                {
-                    sock->async_write_some(boost::asio::buffer("ErrorCre/"), boost::bind(&server::start, this));
-                }
-            }
+            createRoom(content, create_info, sock);
         }
         // long connect part
         else if (command.compare("JoinNewChatRoom") == 0)
         {
-            // format is "JoinNewChatRoom [UID] [Uname] [RoomName]"
-            auto info_res = retriveData(content, join_info);
-
-            char query[64];
-            memset(query, 0, strlen(query));
-
-            string s_query("select ChatRID from chatroomset where ChatName = '");
-            string symbol("'\n");
-            s_query = s_query + info_res[2] + symbol;
-
-            strcpy(query, s_query.c_str());
-            auto search_res = selfDefineQuery(query, 1, 1);
-            cout << "the res is: " << search_res[0][0] << "\n";
-            auto chatRID = search_res[0][0];
-
-            if (!search_res[0].empty())
-            {
-                // search exist
-                string exist_query("select id from peo_chat_r where uid = '");
-                exist_query = exist_query + info_res[0] + "' and ChatRID in (select chatRID from chatroomset where ChatName = '" + info_res[2] + "')";
-                cout << "the query sentences is: " << exist_query << "\n";
-
-                char rela_query[64];
-                memset(rela_query, 0, strlen(rela_query));
-                strcpy(rela_query, exist_query.c_str());
-
-                auto result_set = selfDefineQuery(rela_query, 1, 1);
-                if (result_set[0][0].size() != 0)
-                {
-                    cout << "Exist joined, return SuccessJoin"
-                         << "\n";
-                    sock->async_write_some(boost::asio::buffer("SuccessJoin/"), boost::bind(&server::start, this));
-                }
-                else
-                {
-                    // 1.search id desc from rela table
-                    memset(rela_query, 0, strlen(rela_query));
-                    strcpy(rela_query, "select id from peo_chat_r order by id desc");
-                    auto search_res = selfDefineQuery(rela_query, 1, 1);
-
-                    // 2.add this relation into rela table
-                    auto Rela_ID_S = getNextKey(search_res[0][0]);
-                    int cre_res = createRela(Rela_ID_S, info_res[0], chatRID);
-
-                    // 3.jduge whether it is success.
-                    if (cre_res == 1)
-                    {
-                        sock->async_write_some(boost::asio::buffer("SuccessJoin/"), boost::bind(&server::start, this));
-                    }
-                    else
-                    {
-                        sock->async_write_some(boost::asio::buffer("ErrorQuery/"), boost::bind(&server::start, this));
-                    }
-                }
-            }
-            else
-            {
-                sock->async_write_some(boost::asio::buffer("ChatRoomNotExist/"), boost::bind(&server::start, this));
-            }
+            joinToRoom(content, join_info, sock);
         }
         else if (command.compare("AccessChatRoom") == 0)
         {
-            // format is "AccessChatRoom [UserName] [ChatRoomName]"
+            // format is "AccessChatRoom [UserName] [ChatName]"
             auto info_res = retriveData(content, access_info);
-            auto iter = servers.find(info_res[1]); // iter is <ChatRoom, server> pair
+            auto iter = servers.find(info_res[1]);
+            std::string userName(info_res[1]);
 
             if (iter == servers.end())
             {
@@ -345,7 +129,6 @@ public:
 
             sock->async_write_some(boost::asio::buffer("SuccessAccess/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
             this->status = 1;
-            this->start();
         }
         else if (command.compare("Chat") == 0 && this->status == 1)
         {
@@ -358,9 +141,8 @@ public:
 
             // size jduge is client things
             this_server->send(sock, info_res[1], info_res[2]);
-
-            // have not send some infomation to client,because it is chat status.
-            this->start();
+            boost::system::error_code ec;
+            this->accept_handler(ec, sock);
         }
         else
         {
@@ -370,4 +152,10 @@ public:
 };
 
 typedef std::shared_ptr<server> main_server_ptr;
-typedef std::map<std::string, chat_server_ptr>  chat_server_map;
+
+// boost::bind(&func,para1,para2,para3,...)
+// in this,para is a sequence of func's parameter.
+// but you want to set a placeholder,you can use
+// _n to set them,which n is sequence of that after
+// bind,and '_n' in what place,it replace that place's
+// parameter.

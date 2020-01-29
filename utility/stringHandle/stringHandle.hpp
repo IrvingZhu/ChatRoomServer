@@ -22,3 +22,8 @@ std::string getNextKey(const std::string &srcString)
 
     return result;                  // id to string and return.
 }
+
+void print_returnInfo(std::string info)
+{
+    cout << "the operate result is : " << info << endl;
+}
