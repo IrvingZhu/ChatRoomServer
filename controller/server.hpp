@@ -64,31 +64,32 @@ public:
             cout << ec.message() << '\n';
             return;
         }
-        cout << "client: ";
-        cout << sock->remote_endpoint().address() << endl;
+        cout << "client: " << sock->remote_endpoint().address() << endl;
         sock->async_read_some(boost::asio::buffer(this->buffer), boost::bind(&server::read_handler, this, boost::asio::placeholders::error, sock));
         start(); //retry to accept the next quest ......
     }
 
     void read_handler(const boost::system::error_code &ec, sock_ptr sock)
     {
+        // get buffer information
         int init_pos = 0;
         std::string comBuffer(this->buffer);
-        cout << comBuffer << "\n";
+        cout << "the receive buffer's content is : " << comBuffer << "\n";
 
+        // reset information
         memset(this->buffer, 0, strlen(this->buffer));
 
+        // find command and info
         auto posi = comBuffer.find(" ");
-
         if (posi > 1024)
         {
             sock->async_write_some(boost::asio::buffer("InfoError/"), boost::bind(&server::start, this));
             return;
         }
-
         auto command = comBuffer.substr(init_pos, posi - init_pos);
         auto content = comBuffer.substr(posi + 1);
 
+        // main work logic
         if (command.compare("Login") == 0)
         {
             Login(content, login_info, sock);
