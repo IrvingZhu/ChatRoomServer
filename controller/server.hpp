@@ -120,14 +120,15 @@ public:
             // format is "AccessChatRoom [UserName] [ChatName]"
             auto info_res = retriveData(content, access_info);
             auto iter = servers.find(info_res[1]);
-            std::string userName(info_res[1]);
 
             if (iter == servers.end())
             {
                 chat_server_ptr server = std::make_shared<chat_server>();
                 servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
+                server->join(sock);
             }
 
+            iter->second->join(sock);
             sock->async_write_some(boost::asio::buffer("SuccessAccess/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
             this->status = 1;
         }
