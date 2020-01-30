@@ -82,6 +82,7 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 				row = mysql_fetch_row(res);	// row is two dimension array.
 
 				int i = 0;
+				if (*row == nullptr) return result;
 				while (i < peo_table_element_num)
 				{
 					result.push_back(row[i]);
