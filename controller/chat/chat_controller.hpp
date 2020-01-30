@@ -19,7 +19,7 @@ typedef std::shared_ptr<boost::asio::ip::tcp::socket> sock_ptr;
 
 class chat_server : enable_shared_from_this<chat_server>
 {
-    chat_message_queue this_queue;
+    chat_message_queue recent_msg;
     enum
     {
         max_recent_msgs = 100
@@ -42,10 +42,10 @@ void chat_server::send(sock_ptr sock, const std::string &UserName, const std::st
     // before weite_msgs_ empty,push your message to the queue
     this->push(UserName, send_info);
 
-    while (this->this_queue.size() > max_recent_msgs)
-        this->this_queue.pop_front();
+    while (this->recent_msg.size() > max_recent_msgs)
+        this->recent_msg.pop_front();
 
-    auto iter = this->this_queue.end();
+    auto iter = this->recent_msg.end();
     sock->async_write_some(boost::asio::buffer(iter->data(),
                                                iter->length()),
                            boost::bind(&chat_server::handle_write, shared_from_this(), sock,
@@ -60,14 +60,14 @@ void chat_server::push(const std::string &userName, const std::string &send_info
     auto sp_info = msg.body();
     strcpy(sp_info, p_info); //construct the send_info.
 
-    this->this_queue.push_back(msg);
+    this->recent_msg.push_back(msg);
 }
 
 void chat_server::handle_write(sock_ptr sock, const boost::system::error_code &error, chat_message_queue::iterator &iter)
 {
     if (!error)
     {
-        if (iter != this->this_queue.begin())
+        if (iter != this->recent_msg.begin())
         {
             sock->async_write_some(boost::asio::buffer(iter->data(),
                                                        iter->length()),
