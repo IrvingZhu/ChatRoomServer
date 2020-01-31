@@ -50,7 +50,7 @@ void chat_server::join(sock_ptr sock)
 
     auto iter = this->recent_msg.begin();
     boost::system::error_code ec;
-    
+
     std::cout << "Next to send all users room info" << endl;
     this->join_deliever(sock, iter, ec);
 }
@@ -63,6 +63,7 @@ void chat_server::send(sock_ptr sock, const std::string &UserName, const std::st
     this->push_to_write(UserName, send_info);
     if (!write_in_progress)
     {
+        cout << "the send user is: " << UserName << "; the send info is: " << send_info << "\n";
         sock->async_write_some(boost::asio::buffer(this->write_msg.front().data(),
                                                    this->write_msg.front().length()),
                                boost::bind(&chat_server::handle_write, shared_from_this(), sock,

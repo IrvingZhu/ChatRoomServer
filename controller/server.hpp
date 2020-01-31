@@ -131,8 +131,9 @@ public:
             {
                 iter->second->join(sock);
             }
-            
+
             this->status = 1;
+            this->accept_handler(ec, sock);
         }
         else if (command.compare("Chat") == 0 && this->status == 1)
         {
