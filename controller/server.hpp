@@ -127,9 +127,11 @@ public:
                 servers.insert(pair<string, chat_server_ptr>(info_res[1], server));
                 server->join(sock);
             }
-
-            iter->second->join(sock);
-            sock->async_write_some(boost::asio::buffer("SuccessAccess/"), boost::bind(&server::accept_handler, this, boost::asio::placeholders::error, sock));
+            else
+            {
+                iter->second->join(sock);
+            }
+            
             this->status = 1;
         }
         else if (command.compare("Chat") == 0 && this->status == 1)

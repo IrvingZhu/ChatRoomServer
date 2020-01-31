@@ -46,6 +46,7 @@ chat_server::~chat_server() {}
 
 void chat_server::join(sock_ptr sock)
 {
+    sock->write_some(boost::asio::buffer("SuccessAccess/"));
     auto iter = this->recent_msg.begin();
     boost::system::error_code ec;
     this->join_deliever(sock, iter, ec);
