@@ -91,10 +91,6 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 				}
 
 				mysql_free_result(res);
-				for(auto iter = result.begin();iter != result.end(); iter++){
-					cout << *iter << " ";
-				}
-				cout << "\n" << endl;
 			}
 			return result;
 		}
