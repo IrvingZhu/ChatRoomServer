@@ -36,14 +36,10 @@ private:
     // string comBuffer;
     char buffer[2048];
     chat_server_map servers;
-    int status;
-    // if status is 0,short connecting.
-    // else long connecting to chat.
 
 public:
     explicit server(boost::asio::io_service &io) : ios(io),
-                                                   acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8902)),
-                                                   status(0)
+                                                   acceptor(ios, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), 8902))
     {
         memset(this->buffer, 0, strlen(buffer));
         start();
@@ -132,27 +128,30 @@ public:
                 iter->second->join(sock);
             }
 
-            this->status = 1;
             this->accept_handler(ec, sock);
         }
-        else if (command.compare("Chat") == 0 && this->status == 1)
+        else if (command.compare("Chat") == 0)
         {
-            // info_res format
-            // format: "Chat [ChatRoom] [UserName] [Info]"
-            // [Info] = 4 byte length info + 32 byte of chat userName + 1024 byte of chat words.
-            auto info_res = retriveData(content, chat_info);
-            auto iter = servers.find(info_res[0]); // chat room name
-            auto this_server = iter->second;
-
-            // size jduge is client things
-            this_server->send(sock, info_res[1], info_res[2]);
-            boost::system::error_code ec;
-            this->accept_handler(ec, sock);
+            this->chat(sock, content, ec);
         }
         else
         {
             sock->async_write_some(boost::asio::buffer("InfoError/"), boost::bind(&server::start, this));
         }
+    }
+
+    void chat(sock_ptr &sock, std::string content, const boost::system::error_code &ec)
+    {
+        // info_res format
+        // format: "Chat [ChatRoom] [UserName] [Info]"
+        // [Info] = 4 byte length info + 32 byte of chat userName + 1024 byte of chat words.
+        auto info_res = retriveData(content, chat_info);
+        auto iter = servers.find(info_res[0]); // chat room name
+        auto this_server = iter->second;
+
+        // size jduge is client things
+        this_server->send(sock, info_res[1], info_res[2]);
+        this->accept_handler(ec, sock);
     }
 };
 

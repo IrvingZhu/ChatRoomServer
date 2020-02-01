@@ -31,12 +31,12 @@ public:
     chat_server();
     ~chat_server();
     void join(sock_ptr sock);
-    void send(sock_ptr sock, const std::string &UserName, const std::string &send_info);
+    void send(sock_ptr &sock, const std::string &UserName, const std::string &send_info);
 
 private:
     void push_to_recent(const std::string &userName, const std::string &send_info);
     void push_to_write(const std::string &userName, const std::string &send_info);
-    void handle_write(sock_ptr sock, const boost::system::error_code &error);
+    void handle_write(sock_ptr &sock, const boost::system::error_code &error);
     void join_deliever(sock_ptr sock, chat_message_queue::iterator &iter, const boost::system::error_code &error);
 };
 
@@ -55,19 +55,16 @@ void chat_server::join(sock_ptr sock)
     this->join_deliever(sock, iter, ec);
 }
 
-void chat_server::send(sock_ptr sock, const std::string &UserName, const std::string &send_info)
+void chat_server::send(sock_ptr &sock, const std::string &UserName, const std::string &send_info)
 {
     // before weite_msgs_ empty,push your message to the queue
-    bool write_in_progress = !this->write_msg.empty();
     this->push_to_recent(UserName, send_info);
     this->push_to_write(UserName, send_info);
-    if (!write_in_progress)
+    while (!this->write_msg.empty())
     {
         cout << "the send user is: " << UserName << "; the send info is: " << send_info << "\n";
-        sock->async_write_some(boost::asio::buffer(this->write_msg.front().data(),
-                                                   this->write_msg.front().length()),
-                               boost::bind(&chat_server::handle_write, shared_from_this(), sock,
-                                           boost::asio::placeholders::error));
+        sock->write_some(boost::asio::buffer(this->write_msg.front().data(),this->write_msg.front().length()));
+        this->write_msg.pop_front();
     }
 }
 
@@ -94,25 +91,6 @@ void chat_server::push_to_write(const std::string &userName, const std::string &
     strcpy(sp_info, p_info); //construct the send_info.
 
     this->write_msg.push_back(msg);
-}
-
-void chat_server::handle_write(sock_ptr sock, const boost::system::error_code &error)
-{
-    if (!error)
-    {
-        this->write_msg.pop_front();
-        if (!this->write_msg.empty())
-        {
-            sock->async_write_some(boost::asio::buffer(this->write_msg.front().data(),
-                                                       this->write_msg.front().length()),
-                                   boost::bind(&chat_server::handle_write, shared_from_this(), sock,
-                                               boost::asio::placeholders::error));
-        }
-    }
-    else
-    {
-        return;
-    }
 }
 
 void chat_server::join_deliever(sock_ptr sock, chat_message_queue::iterator &iter, const boost::system::error_code &error)
