@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+#include <queue>
 
 // information
 // body+header
@@ -108,3 +109,5 @@ private:
     // in this message format,header is length of
     // information.
 };
+
+typedef std::deque<chat_message> chat_message_queue;

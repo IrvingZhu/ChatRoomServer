@@ -2,7 +2,6 @@
 #include <csignal>
 
 #include "../controller/server.hpp"
-#include "../controller/chat/chat_controller.hpp"
 #include "../utility/signalHandler/signalHandler.hpp"
 
 #include <boost/asio.hpp>
