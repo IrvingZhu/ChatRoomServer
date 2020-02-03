@@ -49,7 +49,11 @@ public:
 
 chat_session::chat_session(boost::asio::io_service &io_service, map_ptr mptr)
     : sock(new boost::asio::ip::tcp::socket(io_service)),
-      mptr(mptr) {}
+      mptr(mptr)
+{
+    // reset information
+    memset(this->buffer, 0, 2048 * sizeof(char));
+}
 
 boost::asio::ip::tcp::socket &chat_session::socket()
 {
@@ -64,12 +68,11 @@ sock_ptr chat_session::ptr_socket()
 void chat_session::receive()
 {
     boost::system::error_code ec;
+    // reset information
+    memset(this->buffer, 0, strlen(this->buffer));
     shared_from_this()->sock->async_read_some(boost::asio::buffer(shared_from_this()->buffer),
                                               boost::bind(
                                                   &chat_session::read_handler, shared_from_this(), ec));
-
-    // reset information
-    memset(this->buffer, 0, strlen(this->buffer));
 }
 
 void chat_session::deliver(const chat_message &msg)
@@ -106,6 +109,9 @@ void chat_session::read_handler(const boost::system::error_code &ec)
     // get buffer information
     std::string comBuffer(shared_from_this()->buffer);
     std::cout << "the receive buffer's content is : " << comBuffer << "\n";
+
+    // reset information
+    memset(this->buffer, 0, strlen(this->buffer));
 
     // find command and info
     int init_posi = 0;
@@ -169,6 +175,7 @@ void chat_session::read_handler(const boost::system::error_code &ec)
         // format: "Chat [ChatRoom] [UserName] [Info]"
         // [Info] = 4 byte length info + 32 byte of chat userName + 1024 byte of chat words.
         this->chat(content, ec);
+        shared_from_this()->receive();
     }
     else
     {
@@ -187,7 +194,6 @@ void chat_session::chat(std::string content, const boost::system::error_code &ec
 
     // size jduge is client things
     this_room->deliever(info_res[1], info_res[2]);
-    shared_from_this()->receive();
 }
 
 typedef std::shared_ptr<chat_session> chat_session_ptr;
