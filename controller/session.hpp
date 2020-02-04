@@ -54,7 +54,6 @@ chat_session::chat_session(boost::asio::io_service &io_service, map_ptr mptr)
     : sock(new boost::asio::ip::tcp::socket(io_service)),
       mptr(mptr)
 {
-    // reset information
     memset(this->buffer, 0, 2048 * sizeof(char));
 }
 
