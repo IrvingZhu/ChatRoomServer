@@ -2,7 +2,6 @@
 #include <map>
 
 #include "../utility/retriveData/retriveData.hpp"
-#include "../utility/convert/convert.hpp"
 #include "./participants.hpp"
 #include "./chat/chat_message.hpp"
 #include "./chat/chat_room.hpp"
@@ -40,9 +39,10 @@ public:
     sock_ptr ptr_socket();
     void receive();
     void deliver(const chat_message &msg);
-    void handle_write(const boost::system::error_code &error);
-    void read_handler(const boost::system::error_code &ec);
-    void chat(std::string content, const boost::system::error_code &ec);
+    void handle_write(const boost::system::error_code &ec);
+    void read_handler();
+    void chat(std::string content);
+    void access_room(std::string content, int access_info);
 };
 
 // session
@@ -86,33 +86,31 @@ void chat_session::deliver(const chat_message &msg)
     }
 }
 
-void chat_session::handle_write(const boost::system::error_code &error)
+void chat_session::handle_write(const boost::system::error_code &ec)
 {
-    if (!error)
+    if (!ec)
     {
         write_msgs_.pop_front();
         if (!write_msgs_.empty())
         {
             shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs_.front().data(),
                                                                           write_msgs_.front().length()),
-                                                      boost::bind(&chat_session::handle_write, shared_from_this(),
-                                                                  boost::asio::placeholders::error));
+                                                      boost::bind(&chat_session::handle_write, shared_from_this()));
         }
     }
 }
 
 // main logic
-void chat_session::read_handler(const boost::system::error_code &ec)
+void chat_session::read_handler()
 {
     // get buffer information
     std::string comBuffer(shared_from_this()->buffer);
     std::cout << "the receive buffer's content is : " << comBuffer << "\n";
 
     // reset information
-    memset(this->buffer, 0, strlen(this->buffer));
+    memset(shared_from_this()->buffer, 0, strlen(shared_from_this()->buffer));
 
     // find command and info
-    int init_posi = 0;
     auto posi = comBuffer.find(" ");
     if (posi > 1024)
     {
@@ -150,21 +148,7 @@ void chat_session::read_handler(const boost::system::error_code &ec)
     }
     else if (command.compare("AccessChatRoom") == 0)
     {
-        // format is "AccessChatRoom [UserName] [ChatName]"
-        auto info_res = retriveData(content, access_info);
-        auto iter = mptr->find(info_res[1]);
-
-        if (iter == mptr->end())
-        {
-            chat_room_ptr room = std::make_shared<chat_room>();
-            mptr->insert(std::pair<std::string, chat_room_ptr>(info_res[1], room));
-            room->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
-        }
-        else
-        {
-            iter->second->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
-        }
-
+        shared_from_this()->access_room(content, access_info);
         shared_from_this()->receive();
     }
     else if (command.compare("Chat") == 0)
@@ -172,7 +156,7 @@ void chat_session::read_handler(const boost::system::error_code &ec)
         // info_res format
         // format: "Chat [ChatRoom] [UserName] [Info]"
         // [Info] = 4 byte length info + 32 byte of chat userName + 1024 byte of chat words.
-        this->chat(content, ec);
+        shared_from_this()->chat(content);
         shared_from_this()->receive();
     }
     else
@@ -181,7 +165,7 @@ void chat_session::read_handler(const boost::system::error_code &ec)
     }
 }
 
-void chat_session::chat(std::string content, const boost::system::error_code &ec)
+void chat_session::chat(std::string content)
 {
     // info_res format
     // format: "Chat [ChatRoom] [UserName] [Info]"
@@ -192,6 +176,24 @@ void chat_session::chat(std::string content, const boost::system::error_code &ec
 
     // size jduge is client things
     this_room->deliever(info_res[1], info_res[2]);
+}
+
+void chat_session::access_room(std::string content, int access_info)
+{
+    // format is "AccessChatRoom [UserName] [ChatName]"
+    auto info_res = retriveData(content, access_info);
+    auto iter = mptr->find(info_res[1]);
+
+    if (iter == mptr->end())
+    {
+        chat_room_ptr room = std::make_shared<chat_room>();
+        mptr->insert(std::pair<std::string, chat_room_ptr>(info_res[1], room));
+        room->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
+    }
+    else
+    {
+        iter->second->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
+    }
 }
 
 typedef std::shared_ptr<chat_session> chat_session_ptr;

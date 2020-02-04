@@ -3,23 +3,14 @@
 #include <iostream>
 #include <memory>
 
-#define WIN32_LEAN_AND_MEAN
-
-#include "../utility/retriveData/retriveData.hpp"
-#include "../utility/convert/convert.hpp"
-#include "./chat/chat_message.hpp"
-#include "./read_handler/login.hpp"
-#include "./read_handler/register.hpp"
-#include "./read_handler/userabout.hpp"
-#include "./read_handler/modityabout.hpp"
-#include "./read_handler/createroom.hpp"
-#include "./read_handler/joinroom.hpp"
 #include "./session.hpp"
 
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
+
+#define WIN32_LEAN_AND_MEAN
 
 using namespace std;
 

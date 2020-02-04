@@ -4,10 +4,8 @@
 #include <cstdlib>
 #include <deque>
 #include <iostream>
-#include <list>
 #include <memory>
 #include <set>
-#include <map>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include "./chat_message.hpp"
