@@ -107,7 +107,7 @@ void chat_session::read_handler()
 {
     // get buffer information
     std::string comBuffer(shared_from_this()->buffer);
-    std::cout << "the receive buffer's content is : " << comBuffer << "\n";
+    std::cout << "the receive buffer's content is : " << comBuffer << " :end" << "\n";
 
     // reset information
     memset(shared_from_this()->buffer, 0, strlen(shared_from_this()->buffer));
