@@ -17,7 +17,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 
-int login_info = 2, register_info = 2, modify_about_info = 2, create_info = 3, join_info = 3, access_info = 2, chat_info = 3, user_about_info = 1;
+int login_info = 2, register_info = 2, modify_about_info = 2, create_info = 3,\
+    join_info = 3, access_info = 2, chat_info = 3, user_about_info = 1, leave_info = 1;
 
 typedef std::shared_ptr<boost::asio::ip::tcp::socket> sock_ptr;
 typedef std::map<std::string, chat_room_ptr> chat_room_map;
@@ -36,7 +37,8 @@ private:
     void handle_write(const boost::system::error_code &ec);
     void read_handler();
     void access_room(std::string content, int access_info);
-    void chat(std::string content);
+    void chat(std::string content, int chat_info);
+    void leave(std::string content, int leave_info);
 
 public:
     chat_session(boost::asio::io_service &io_service, map_ptr mptr);
@@ -153,8 +155,12 @@ void chat_session::read_handler()
     }
     else if (command.compare("Chat") == 0)
     {
-        shared_from_this()->chat(content);
+        shared_from_this()->chat(content, chat_info);
         shared_from_this()->receive();
+    }
+    else if (command.compare("Leave") == 0)
+    {
+        shared_from_this()->leave(content, leave_info);
     }
     else
     {
@@ -181,7 +187,7 @@ void chat_session::access_room(std::string content, int access_info)
     }
 }
 
-void chat_session::chat(std::string content)
+void chat_session::chat(std::string content, int chat_info)
 {
     // info_res format
     // format: "Chat [ChatRoom] [UserName] [Info]"
@@ -192,6 +198,17 @@ void chat_session::chat(std::string content)
 
     // size jduge is client things
     this_room->deliever(info_res[1], info_res[2]);
+}
+
+void chat_session::leave(std::string content, int leave_info)
+{
+    // format: "Leave [RoomName]"
+    auto info_res = retriveData(content, leave_info);
+    auto iter = mptr->find(info_res[0]); // chat room name
+    auto this_room = iter->second;
+
+    // leave
+    this_room->leave(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
 }
 
 typedef std::shared_ptr<chat_session> chat_session_ptr;
