@@ -68,8 +68,6 @@ sock_ptr chat_session::ptr_socket()
 void chat_session::receive()
 {
     boost::system::error_code ec;
-    // reset information
-    memset(this->buffer, 0, strlen(this->buffer));
     shared_from_this()->sock->async_read_some(boost::asio::buffer(shared_from_this()->buffer),
                                               boost::bind(
                                                   &chat_session::read_handler, shared_from_this(), ec));
