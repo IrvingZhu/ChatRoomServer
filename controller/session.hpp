@@ -79,7 +79,7 @@ void chat_session::deliver(const chat_message &msg)
     write_msgs_.push_back(msg);
     if (!write_in_progress)
     {
-        shared_from_this()->sock->async_read_some(boost::asio::buffer(write_msgs_.front().data(),
+        shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs_.front().data(),
                                                                       write_msgs_.front().length()),
                                                   boost::bind(&chat_session::handle_write, shared_from_this(),
                                                               boost::asio::placeholders::error));
@@ -93,7 +93,7 @@ void chat_session::handle_write(const boost::system::error_code &error)
         write_msgs_.pop_front();
         if (!write_msgs_.empty())
         {
-            shared_from_this()->sock->async_read_some(boost::asio::buffer(write_msgs_.front().data(),
+            shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs_.front().data(),
                                                                           write_msgs_.front().length()),
                                                       boost::bind(&chat_session::handle_write, shared_from_this(),
                                                                   boost::asio::placeholders::error));
