@@ -33,16 +33,17 @@ private:
     chat_message_queue write_msgs_;
     map_ptr mptr;
 
+    void handle_write(const boost::system::error_code &ec);
+    void read_handler();
+    void access_room(std::string content, int access_info);
+    void chat(std::string content);
+
 public:
     chat_session(boost::asio::io_service &io_service, map_ptr mptr);
     boost::asio::ip::tcp::socket &socket();
     sock_ptr ptr_socket();
     void receive();
     void deliver(const chat_message &msg);
-    void handle_write(const boost::system::error_code &ec);
-    void read_handler();
-    void chat(std::string content);
-    void access_room(std::string content, int access_info);
 };
 
 // session
@@ -67,10 +68,9 @@ sock_ptr chat_session::ptr_socket()
 
 void chat_session::receive()
 {
-    boost::system::error_code ec;
     shared_from_this()->sock->async_read_some(boost::asio::buffer(shared_from_this()->buffer),
                                               boost::bind(
-                                                  &chat_session::read_handler, shared_from_this(), ec));
+                                                  &chat_session::read_handler, shared_from_this()));
 }
 
 void chat_session::deliver(const chat_message &msg)
@@ -95,7 +95,7 @@ void chat_session::handle_write(const boost::system::error_code &ec)
         {
             shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs_.front().data(),
                                                                           write_msgs_.front().length()),
-                                                      boost::bind(&chat_session::handle_write, shared_from_this()));
+                                                      boost::bind(&chat_session::handle_write, shared_from_this(), ec));
         }
     }
 }
@@ -153,29 +153,14 @@ void chat_session::read_handler()
     }
     else if (command.compare("Chat") == 0)
     {
-        // info_res format
-        // format: "Chat [ChatRoom] [UserName] [Info]"
-        // [Info] = 4 byte length info + 32 byte of chat userName + 1024 byte of chat words.
         shared_from_this()->chat(content);
         shared_from_this()->receive();
     }
     else
     {
         shared_from_this()->ptr_socket()->write_some(boost::asio::buffer("InfoError/"));
+        return;
     }
-}
-
-void chat_session::chat(std::string content)
-{
-    // info_res format
-    // format: "Chat [ChatRoom] [UserName] [Info]"
-    // [Info] = 4 byte length info + 32 byte of chat userName + 1024 byte of chat words.
-    auto info_res = retriveData(content, chat_info);
-    auto iter = mptr->find(info_res[0]); // chat room name
-    auto this_room = iter->second;
-
-    // size jduge is client things
-    this_room->deliever(info_res[1], info_res[2]);
 }
 
 void chat_session::access_room(std::string content, int access_info)
@@ -194,6 +179,19 @@ void chat_session::access_room(std::string content, int access_info)
     {
         iter->second->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
     }
+}
+
+void chat_session::chat(std::string content)
+{
+    // info_res format
+    // format: "Chat [ChatRoom] [UserName] [Info]"
+    // [Info] = 4 byte length info + 32 byte of chat userName + 1024 byte of chat words.
+    auto info_res = retriveData(content, chat_info);
+    auto iter = mptr->find(info_res[0]); // chat room name
+    auto this_room = iter->second;
+
+    // size jduge is client things
+    this_room->deliever(info_res[1], info_res[2]);
 }
 
 typedef std::shared_ptr<chat_session> chat_session_ptr;

@@ -25,11 +25,12 @@ private:
     boost::asio::ip::tcp::acceptor acceptor;
     map_ptr mptr;
 
+    void start();
+    void accept_handler(chat_session_ptr session, const boost::system::error_code &ec);
+    
 public:
     server(boost::asio::io_service &io_service);
     ~server();
-    void start();
-    void accept_handler(chat_session_ptr session, const boost::system::error_code &ec);
 };
 
 // server
