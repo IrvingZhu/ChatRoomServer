@@ -41,11 +41,7 @@ void chat_room::leave(chat_participant_ptr participant)
 
 void chat_room::deliever(const std::string &userName, const std::string &send_info)
 {
-    chat_message msg;
-    auto p_info = send_info.c_str();
-    msg.encode_user(userName);
-    auto sp_info = msg.body();
-    strcpy(sp_info, p_info); //construct the send_info.
+    chat_message msg(userName, send_info);
 
     recent_msgs_.push_back(msg);
     while (recent_msgs_.size() > max_recent_msgs)

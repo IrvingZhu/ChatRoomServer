@@ -12,102 +12,76 @@
 
 class chat_message
 {
-public:
+private:
     enum
     {
-        header_length = 4
-    };
-    enum
-    {
-        max_user_length = 32
+        max_user_length = 64
     };
     enum
     {
         max_body_length = 1024
     };
 
-    chat_message()
-        : body_length_(0),
-          user_length_(0)
-    {
-    }
-
-    const char *data() const
-    {
-        return data_;
-    }
-
-    char *data()
-    {
-        return data_;
-    }
-
-    size_t length() const
-    {
-        return header_length + user_length_ + body_length_;
-    }
+    char dataBuf[max_user_length + max_body_length];
+    size_t body_length; // length of data
+    size_t user_length;
+    // in this message format,header is length of
+    // information.
 
     const char *body() const
     {
-        return data_ + header_length + user_length_;
+        return this->dataBuf + max_user_length;
     }
 
     char *body()
     {
-        return data_ + header_length + user_length_;
+        return this->dataBuf + max_user_length;
     }
 
-    size_t body_length() const
+    void struct_user(std::string username)
     {
-        return body_length_;
-    }
-
-    void body_length(size_t new_length)
-    {
-        body_length_ = new_length;
-        if (body_length_ > max_body_length)
-            body_length_ = max_body_length;
-    }
-
-    bool decode_header()
-    {
-        using namespace std; // For strncat and atoi.
-        char header[header_length + 1] = "";
-        strncat(header, data_, header_length);
-        body_length_ = atoi(header);
-        if (body_length_ > max_body_length)
+        if(username.size() > max_user_length)
         {
-            body_length_ = 0;
-            return false;
+            username = username.substr(max_user_length);
         }
-        return true;
+        strcpy(this->data(), username.c_str());
     }
 
-    void encode_header()
+    void struct_info(std::string send_info)
     {
-        using namespace std; // For sprintf and memcpy.
-        char header[header_length + 1] = "";
-        sprintf(header, "%4d", body_length_);
-        memcpy(data_, header, header_length);
-    }
-
-    bool encode_user(string username)
-    {
-        if (username.length() >= max_user_length)
+        if (send_info.size() > max_body_length) 
         {
-            return false;
+            send_info = send_info.substr(max_body_length);
         }
-        auto p_user = username.c_str();
-        strcpy(data_ + header_length, p_user);
-        return true;
+        strcpy(this->body(), send_info.c_str());
     }
 
-private:
-    char data_[header_length + max_user_length + max_body_length];
-    size_t body_length_; // length of data
-    size_t user_length_;
-    // in this message format,header is length of
-    // information.
+public:
+    chat_message(const std::string &username, const std::string &send_info) : body_length(send_info.size()),
+          user_length(max_user_length) 
+    {
+        if(this->body_length > max_body_length)
+            this->body_length = max_body_length;
+        this->struct_user(username);
+        this->struct_info(send_info);
+    }
+
+    const char *data() const
+    {
+        return dataBuf;
+    }
+
+    char *data()
+    {
+        return dataBuf;
+    }
+
+    size_t length() const
+    {
+        return user_length + body_length;
+    }
+
+    ~chat_message() {}
 };
 
 typedef std::deque<chat_message> chat_message_queue;
