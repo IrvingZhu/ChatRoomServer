@@ -60,8 +60,11 @@ public:
     chat_message(const std::string &username, const std::string &send_info) : body_length(send_info.size()),
           user_length(max_user_length) 
     {
+        memset(this->dataBuf, 0, (max_user_length + max_body_length)*sizeof(char));
+
         if(this->body_length > max_body_length)
             this->body_length = max_body_length;
+        
         this->struct_user(username);
         this->struct_info(send_info);
     }
