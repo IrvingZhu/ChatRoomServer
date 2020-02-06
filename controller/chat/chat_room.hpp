@@ -25,6 +25,7 @@ public:
     void join(chat_participant_ptr participant);
     void leave(chat_participant_ptr participant);
     void deliever(const std::string &userName, const std::string &send_info);
+    bool is_participant_empty();
 };
 
 void chat_room::join(chat_participant_ptr participant)
@@ -49,6 +50,11 @@ void chat_room::deliever(const std::string &userName, const std::string &send_in
 
     std::for_each(participants.begin(), participants.end(),
                   boost::bind(&chat_participant::deliver, _1, boost::ref(msg)));
+}
+
+bool chat_room::is_participant_empty()
+{
+    return this->participants.empty();
 }
 
 typedef std::shared_ptr<chat_room> chat_room_ptr;

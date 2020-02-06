@@ -17,7 +17,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 
-int login_info = 2, register_info = 2, modify_about_info = 2, create_info = 3,\
+int login_info = 2, register_info = 2, modify_about_info = 2, create_info = 3,
     join_info = 3, access_info = 2, chat_info = 3, user_about_info = 1, leave_info = 1;
 
 typedef std::shared_ptr<boost::asio::ip::tcp::socket> sock_ptr;
@@ -81,9 +81,9 @@ void chat_session::deliver(const chat_message &msg)
     if (!write_in_progress)
     {
         shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs.front().data(),
-                                                                      write_msgs.front().length()),
-                                                  boost::bind(&chat_session::handle_write, shared_from_this(),
-                                                              boost::asio::placeholders::error));
+                                                                       write_msgs.front().length()),
+                                                   boost::bind(&chat_session::handle_write, shared_from_this(),
+                                                               boost::asio::placeholders::error));
     }
 }
 
@@ -95,8 +95,8 @@ void chat_session::handle_write(const boost::system::error_code &ec)
         if (!write_msgs.empty())
         {
             shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs.front().data(),
-                                                                          write_msgs.front().length()),
-                                                      boost::bind(&chat_session::handle_write, shared_from_this(), ec));
+                                                                           write_msgs.front().length()),
+                                                       boost::bind(&chat_session::handle_write, shared_from_this(), ec));
         }
     }
 }
@@ -106,7 +106,8 @@ void chat_session::read_handler()
 {
     // get buffer information
     std::string comBuffer(shared_from_this()->buffer);
-    std::cout << "the receive buffer's content is : " << comBuffer << " :end" << "\n";
+    std::cout << "the receive buffer's content is : " << comBuffer << " :end"
+              << "\n";
 
     // reset information
     memset(shared_from_this()->buffer, 0, strlen(shared_from_this()->buffer));
@@ -210,6 +211,11 @@ void chat_session::leave(std::string content, int leave_info)
 
     // leave
     this_room->leave(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
+    if (this_room->is_participant_empty())
+    {
+        // if it has no participant, delete them.
+        mptr->erase(iter);
+    }
 }
 
 typedef std::shared_ptr<chat_session> chat_session_ptr;
