@@ -59,7 +59,8 @@ void server::accept_handler(chat_session_ptr session, const boost::system::error
         cout << ec.message() << '\n';
         return;
     }
-    cout << "client: " << session->ptr_socket()->remote_endpoint().address() << "\n";
+    cout << "\n\n********************client: " << \
+    session->ptr_socket()->remote_endpoint().address() << "********************\n";
     session->receive();
     start(); //retry to accept the next quest ......
 }
