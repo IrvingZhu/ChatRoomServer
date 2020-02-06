@@ -15,7 +15,7 @@ class chat_message
 private:
     enum
     {
-        max_user_length = 64
+        max_user_length = 32
     };
     enum
     {
