@@ -215,6 +215,7 @@ void chat_session::leave(std::string content, int leave_info)
     {
         // if it has no participant, delete them.
         mptr->erase(iter);
+        cout << "the " << info_res[0] << " Room has destoryed" << "\n";
     }
 }
 
