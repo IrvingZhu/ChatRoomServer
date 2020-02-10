@@ -81,7 +81,7 @@ public:
 
     size_t length() const
     {
-        return user_length + body_length;
+        return user_length + body_length + 1;
     }
 
     ~chat_message() {}

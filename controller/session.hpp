@@ -84,6 +84,8 @@ void chat_session::deliver(const chat_message &msg)
                                                                        write_msgs.front().length()),
                                                    boost::bind(&chat_session::handle_write, shared_from_this(),
                                                                boost::asio::placeholders::error));
+        cout << shared_from_this()->sock->remote_endpoint().address() << ":" << shared_from_this()->sock->remote_endpoint().port()
+             << " the write_msg size is: " << write_msgs.size() << "(write)\n";
     }
 }
 
@@ -97,6 +99,8 @@ void chat_session::handle_write(const boost::system::error_code &ec)
             shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs.front().data(),
                                                                            write_msgs.front().length()),
                                                        boost::bind(&chat_session::handle_write, shared_from_this(), ec));
+            cout << shared_from_this()->sock->remote_endpoint().address() << ":" << shared_from_this()->sock->remote_endpoint().port()
+                 << " the write_msg size is: " << write_msgs.size() << "(handle)\n";
         }
     }
 }
