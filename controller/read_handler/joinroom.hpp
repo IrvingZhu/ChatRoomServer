@@ -35,7 +35,7 @@ void joinToRoom(std::string content, int info, sock_ptr sock)
         exist_query = exist_query + info_res[0] + "' and ChatRID in (select chatRID from chatroomset where ChatName = '" + info_res[2] + "')";
         cout << "the query sentences is: " << exist_query << "\n";
 
-        char rela_query[64];
+        char rela_query[256];
         memset(rela_query, 0, strlen(rela_query));
         strcpy(rela_query, exist_query.c_str());
 
