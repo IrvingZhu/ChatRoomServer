@@ -120,7 +120,8 @@ void chat_session::read_handler()
     auto posi = comBuffer.find(" ");
     if (posi > 1024)
     {
-        shared_from_this()->ptr_socket()->write_some(boost::asio::buffer("InfoError/"));
+        shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("InfoError/"),
+                                                           boost::bind(&print_returnInfo, "InfoError"));
         return;
     }
     auto command = comBuffer.substr(0, posi - 0);
@@ -155,7 +156,6 @@ void chat_session::read_handler()
     else if (command.compare("AccessChatRoom") == 0)
     {
         shared_from_this()->access_room(content, access_info);
-        shared_from_this()->receive();
     }
     else if (command.compare("Chat") == 0)
     {
@@ -168,7 +168,8 @@ void chat_session::read_handler()
     }
     else
     {
-        shared_from_this()->ptr_socket()->write_some(boost::asio::buffer("InfoError/"));
+        shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("InfoError/"),
+                                                           boost::bind(&print_returnInfo, "InfoError"));
         return;
     }
 }
@@ -190,7 +191,8 @@ void chat_session::access_room(std::string content, int access_info)
         iter->second->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
     }
 
-    shared_from_this()->ptr_socket()->write_some(boost::asio::buffer("SuccessAccess/"));
+    shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("SuccessAccess/"), 
+                                                       boost::bind(&chat_session::receive, shared_from_this()));
 }
 
 void chat_session::chat(std::string content, int chat_info)
