@@ -52,6 +52,6 @@ void userAbout(std::string content, std::string command, int info, sock_ptr sock
         send_info = send_info + "/";
         cout << send_info << endl;
 
-        sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&print_returnInfo, "SuccessRegister"));
+        sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&print_returnInfo, "Success search user's all joined room"));
     }
 }
