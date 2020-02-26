@@ -33,7 +33,7 @@ private:
     char buffer[2048];
     chat_message_queue write_msgs;
     map_ptr mptr;
-    int status = 0;
+    int status = 0; // for it, tag the chat condition.
     std::string roomname;
 
     void handle_write(const boost::system::error_code &ec);
