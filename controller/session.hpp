@@ -35,6 +35,7 @@ private:
     map_ptr mptr;
     int status = 0; // for it, tag the chat condition.
     std::string roomname;
+    boost::asio::deadline_timer timer;
 
     void handle_write(const boost::system::error_code &ec);
     void read_handler();
@@ -48,6 +49,8 @@ public:
     sock_ptr ptr_socket();
     void receive();
     void deliver(const chat_message &msg);
+    void heart_beating();
+    void destroy_session();
     ~chat_session();
 };
 
@@ -56,7 +59,8 @@ public:
 chat_session::chat_session(boost::asio::io_service &io_service, map_ptr mptr)
     : sock(new boost::asio::ip::tcp::socket(io_service)),
       mptr(mptr),
-      roomname("")
+      roomname(""),
+      timer(io_service)
 {
     memset(this->buffer, 0, 2048 * sizeof(char));
 }
@@ -155,6 +159,7 @@ void chat_session::read_handler()
     {
         joinToRoom(content, join_info, shared_from_this()->ptr_socket());
     }
+
     // long connect part
     else if (command.compare("AccessChatRoom") == 0)
     {
@@ -171,6 +176,17 @@ void chat_session::read_handler()
         shared_from_this()->leave(content, leave_info);
         shared_from_this()->status = 0;
     }
+
+    else if(command.compare("Exist") == 0)
+    {
+        // if in the chat condition, check the heartbeating.
+        if (shared_from_this()->status == 1)
+        {
+            shared_from_this()->timer.expires_at(shared_from_this()->timer.expires_at() + boost::posix_time::minutes(8));
+            shared_from_this()->timer.async_wait(boost::bind(&chat_session::heart_beating, shared_from_this()));
+        }
+    }
+
     else
     {
         shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("InfoError/"),
@@ -183,6 +199,8 @@ void chat_session::read_handler()
         }
         if (shared_from_this()->sock->is_open())
             shared_from_this()->sock->close();
+
+        shared_from_this()->timer.cancel();
     }
 }
 
@@ -206,6 +224,10 @@ void chat_session::access_room(std::string content, int access_info)
         iter->second->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
     }
 
+    // register timer to heartbeating callback
+    shared_from_this()->timer.expires_from_now(boost::posix_time::minutes(8));
+    shared_from_this()->timer.async_wait(boost::bind(&chat_session::heart_beating, shared_from_this()));
+
     shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("SuccessAccess/"), 
                                                        boost::bind(&chat_session::receive, shared_from_this()));
 }
@@ -215,6 +237,11 @@ void chat_session::chat(std::string content, int chat_info)
     // info_res format
     // format: "Chat [ChatRoom] [UserName] [Info]"
     // [Info] = 4 byte length info + 32 byte of chat userName + 1024 byte of chat words.
+
+    // modify the timer event and time.
+    shared_from_this()->timer.expires_at(shared_from_this()->timer.expires_at() + boost::posix_time::minutes(8));
+    shared_from_this()->timer.async_wait(boost::bind(&chat_session::heart_beating, shared_from_this()));
+
     auto info_res = retriveData(content, chat_info);
     auto iter = mptr->find(info_res[0]); // chat room name
     auto this_room = iter->second;
@@ -238,6 +265,23 @@ void chat_session::leave(std::string content, int leave_info)
         mptr->erase(iter);
         cout << "the " << info_res[0] << " Room has destoryed" << "\n";
     }
+
+    shared_from_this()->timer.cancel();
+}
+
+void chat_session::heart_beating()
+{
+    shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("Exist?/"),
+                                                       boost::bind(&chat_session::receive, shared_from_this()));
+
+    shared_from_this()->timer.expires_at(shared_from_this()->timer.expires_at() + boost::posix_time::minutes(1));
+    shared_from_this()->timer.async_wait(boost::bind(&chat_session::destroy_session, shared_from_this()));
+}
+
+void chat_session::destroy_session()
+{
+    cout << "\n-----------------The Client will be destroy soon-----------------\n";
+    return;
 }
 
 chat_session::~chat_session()
