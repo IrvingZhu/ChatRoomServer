@@ -33,6 +33,8 @@ private:
     char buffer[2048];
     chat_message_queue write_msgs;
     map_ptr mptr;
+    int status = 0;
+    std::string roomname;
 
     void handle_write(const boost::system::error_code &ec);
     void read_handler();
@@ -46,13 +48,15 @@ public:
     sock_ptr ptr_socket();
     void receive();
     void deliver(const chat_message &msg);
+    ~chat_session();
 };
 
 // session
 
 chat_session::chat_session(boost::asio::io_service &io_service, map_ptr mptr)
     : sock(new boost::asio::ip::tcp::socket(io_service)),
-      mptr(mptr)
+      mptr(mptr),
+      roomname("")
 {
     memset(this->buffer, 0, 2048 * sizeof(char));
 }
@@ -122,7 +126,6 @@ void chat_session::read_handler()
     {
         shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("InfoError/"),
                                                            boost::bind(&print_returnInfo, "InfoError"));
-        return;
     }
     auto command = comBuffer.substr(0, posi - 0);
     auto content = comBuffer.substr(posi + 1);
@@ -148,13 +151,14 @@ void chat_session::read_handler()
     {
         createRoom(content, create_info, shared_from_this()->ptr_socket());
     }
-    // long connect part
     else if (command.compare("JoinNewChatRoom") == 0)
     {
         joinToRoom(content, join_info, shared_from_this()->ptr_socket());
     }
+    // long connect part
     else if (command.compare("AccessChatRoom") == 0)
     {
+        shared_from_this()->status = 1;
         shared_from_this()->access_room(content, access_info);
     }
     else if (command.compare("Chat") == 0)
@@ -165,12 +169,20 @@ void chat_session::read_handler()
     else if (command.compare("Leave") == 0)
     {
         shared_from_this()->leave(content, leave_info);
+        shared_from_this()->status = 0;
     }
     else
     {
         shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("InfoError/"),
                                                            boost::bind(&print_returnInfo, "InfoError"));
-        return;
+        
+        if (shared_from_this()->status == 1)
+        {
+            shared_from_this()->leave(shared_from_this()->roomname, leave_info);
+            shared_from_this()->status = 0;
+        }
+        if (shared_from_this()->sock->is_open())
+            shared_from_this()->sock->close();
     }
 }
 
@@ -179,6 +191,9 @@ void chat_session::access_room(std::string content, int access_info)
     // format is "AccessChatRoom [UserName] [ChatName]"
     auto info_res = retriveData(content, access_info);
     auto iter = mptr->find(info_res[1]);
+    std::string room = info_res[1];
+
+    shared_from_this()->roomname = shared_from_this()->roomname + room;
 
     if (iter == mptr->end())
     {
@@ -223,6 +238,22 @@ void chat_session::leave(std::string content, int leave_info)
         mptr->erase(iter);
         cout << "the " << info_res[0] << " Room has destoryed" << "\n";
     }
+}
+
+chat_session::~chat_session()
+{
+    // if client isn't close socket and leaving
+    if (this->status == 1)
+    {
+        this->leave(this->roomname, leave_info);
+        this->status = 0;
+    }
+    if (this->sock->is_open())
+        this->sock->close();
+    
+    cout << "\n**********************"
+         << "The Client has been destroyed"
+         << "**********************\n";
 }
 
 typedef std::shared_ptr<chat_session> chat_session_ptr;
