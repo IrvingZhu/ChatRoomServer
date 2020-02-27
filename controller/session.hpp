@@ -50,7 +50,7 @@ public:
     void receive();
     void deliver(const chat_message &msg);
     void heart_beating();
-    void destroy_session();
+    void heart_handler();
     ~chat_session();
 };
 
@@ -275,12 +275,12 @@ void chat_session::heart_beating()
                                                        boost::bind(&chat_session::receive, shared_from_this()));
 
     shared_from_this()->timer.expires_at(shared_from_this()->timer.expires_at() + boost::posix_time::minutes(1));
-    shared_from_this()->timer.async_wait(boost::bind(&chat_session::destroy_session, shared_from_this()));
+    shared_from_this()->timer.async_wait(boost::bind(&chat_session::heart_handler, shared_from_this()));
 }
 
-void chat_session::destroy_session()
+void chat_session::heart_handler()
 {
-    cout << "\n-----------------The Client will be destroy soon-----------------\n";
+    cout << "\n-----------------heart_beating_finished-----------------\n";
     return;
 }
 
