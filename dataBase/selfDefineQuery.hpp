@@ -52,7 +52,6 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
             else
             {
                 std::cout << "Success " << mquery << std::endl;
-                // res = new MYSQL_RES;
                 res = mysql_store_result(con); // result
 
                 int ret_count = 0, para_count = 0;
