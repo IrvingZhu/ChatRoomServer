@@ -40,7 +40,7 @@ private:
 
     void struct_user(std::string username)
     {
-        if(username.size() > max_user_length)
+        if (username.size() > max_user_length)
             username = username.substr(max_user_length);
 
         strcpy(this->data(), username.c_str());
@@ -51,7 +51,7 @@ private:
         auto posi = this->user_length;
         this->dataBuf[posi] = ':';
 
-        if (send_info.size() > max_body_length) 
+        if (send_info.size() > max_body_length)
             send_info = send_info.substr(max_body_length);
 
         strcpy(this->body(), send_info.c_str());
@@ -59,16 +59,16 @@ private:
 
 public:
     chat_message(const std::string &username, const std::string &send_info) : body_length(send_info.size()),
-          user_length(username.size()) 
+                                                                              user_length(username.size())
     {
-        memset(this->dataBuf, 0, (max_user_length + max_body_length)*sizeof(char));
+        memset(this->dataBuf, 0, (max_user_length + max_body_length) * sizeof(char));
 
-        if(this->user_length > max_user_length)
+        if (this->user_length > max_user_length)
             this->user_length = max_user_length;
 
-        if(this->body_length > max_body_length)
+        if (this->body_length > max_body_length)
             this->body_length = max_body_length;
-        
+
         this->struct_user(username);
         this->struct_info(send_info);
     }

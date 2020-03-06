@@ -89,7 +89,7 @@ void chat_session::deliver(const chat_message &msg)
     if (!write_in_progress)
     {
         shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs.front().data(),
-                                                                       write_msgs.front().length()),
+                                                                       write_msgs.front().length() + 1),
                                                    boost::bind(&chat_session::handle_write, shared_from_this(),
                                                                boost::asio::placeholders::error));
         cout << shared_from_this()->sock->remote_endpoint().address() << ":" << shared_from_this()->sock->remote_endpoint().port()
@@ -105,7 +105,7 @@ void chat_session::handle_write(const boost::system::error_code &ec)
         if (!write_msgs.empty())
         {
             shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs.front().data(),
-                                                                           write_msgs.front().length()),
+                                                                           write_msgs.front().length() + 1),
                                                        boost::bind(&chat_session::handle_write, shared_from_this(), ec));
             cout << shared_from_this()->sock->remote_endpoint().address() << ":" << shared_from_this()->sock->remote_endpoint().port()
                  << " the write_msg size is: " << write_msgs.size() << "(handle)\n";
@@ -217,19 +217,22 @@ void chat_session::access_room(std::string content, int access_info)
     {
         chat_room_ptr room = std::make_shared<chat_room>();
         mptr->insert(std::pair<std::string, chat_room_ptr>(info_res[1], room));
+
+        shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("SuccessAccess/\0\0"), 
+                                                           boost::bind(&chat_session::receive, shared_from_this()));
+
         room->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
     }
     else
     {
+        shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("SuccessAccess/\0\0"), 
+                                                           boost::bind(&chat_session::receive, shared_from_this()));
         iter->second->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
     }
 
     // register timer to heartbeating callback
     shared_from_this()->timer.expires_from_now(boost::posix_time::minutes(8));
     shared_from_this()->timer.async_wait(boost::bind(&chat_session::heart_beating, shared_from_this()));
-
-    shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("SuccessAccess/"), 
-                                                       boost::bind(&chat_session::receive, shared_from_this()));
 }
 
 void chat_session::chat(std::string content, int chat_info)
