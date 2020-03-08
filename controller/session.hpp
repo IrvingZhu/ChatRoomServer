@@ -218,14 +218,14 @@ void chat_session::access_room(std::string content, int access_info)
         chat_room_ptr room = std::make_shared<chat_room>();
         mptr->insert(std::pair<std::string, chat_room_ptr>(info_res[1], room));
 
-        shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("SuccessAccess/\0\0"), 
+        shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("\rSuccessAccess\n\0"), 
                                                            boost::bind(&chat_session::receive, shared_from_this()));
 
         room->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
     }
     else
     {
-        shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("SuccessAccess/\0\0"), 
+        shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("\rSuccessAccess\n\0"), 
                                                            boost::bind(&chat_session::receive, shared_from_this()));
         iter->second->join(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
     }
@@ -274,7 +274,7 @@ void chat_session::leave(std::string content, int leave_info)
 
 void chat_session::heart_beating()
 {
-    shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("Exist?/"),
+    shared_from_this()->ptr_socket()->async_write_some(boost::asio::buffer("\rExist?\n"),
                                                        boost::bind(&chat_session::receive, shared_from_this()));
 
     shared_from_this()->timer.expires_at(shared_from_this()->timer.expires_at() + boost::posix_time::minutes(1));
