@@ -1,7 +1,9 @@
 #pragma once
 #include <iostream>
 #include "mysql.h"
-// #pragma comment(lib, "libmysql.lib")
+#include <mutex>
+#include "./dataBaseMutex.hpp"
+
 #pragma comment(a, "libmysql.a")
 
 using namespace std;
@@ -30,23 +32,16 @@ int modifyPersonalInformation(const string &uid, const string &info, int type)
 
 	int count = 0;
 
+	DBmtx.lock();
 	con = mysql_init((MYSQL *)0); //connect utility
 
 	if (con != NULL && mysql_real_connect(con, dbip, dbuser, dbpasswd, dbname, 3306, NULL, 0))
 	{
 		if (!mysql_select_db(con, dbname))
 		{
-			cout << "********Select successfully the database!********\n"
-				 << endl;
+			Log("********Select successfully the database!********\n", false);
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set the code
-
-			// string s_query("update people set uid = '");
-			// string s1("', uname = '");
-			// string s2("', upassword = '");
-			// string s3("'");
-			// s_query = s_query + uid + s1 + uname + s2 + upassword + s3;
-			// strcpy(query, s_query.c_str());
 
 			string s1("' where uid = '");
 			string s2("'");
@@ -56,7 +51,7 @@ int modifyPersonalInformation(const string &uid, const string &info, int type)
 				string s_query("update people set uname = '");
 
 				s_query = s_query + info + s1 + uid + s2;
-				cout << "the query sentences is : " << s_query << "\n";
+				Log("the query sentences is : " + s_query + "\n", false);
 				strcpy(query, s_query.c_str());
 			}
 			else if (type == 1)
@@ -64,37 +59,43 @@ int modifyPersonalInformation(const string &uid, const string &info, int type)
 				string s_query("update people set upassword = '");
 
 				s_query = s_query + info + s1 + uid + s2;
-				cout << "the query sentences is : " << s_query << "\n";
+				Log("the query sentences is : " + s_query + "\n", false);
 				strcpy(query, s_query.c_str());
 			}
 			else
 			{
-				cout << "the type is input Error\n";
+				Log("the type is input Error\n", false);
+				DBmtx.unlock();
 				return 0;
 			}
 
 			rt = mysql_real_query(con, query, strlen(query));
 
 			if (rt)
-			{ // error
-				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
+			{   // error
+				std::string sql_er(mysql_error(con));
+				Log("ERROR making query: " + sql_er + " !!!", false);
+				DBmtx.unlock();
 				return -2;
 			}
 			else
 			{ // success
-				cout << "successfully update" << endl;
+				Log("successfully update", false);
+				DBmtx.unlock();
 				return 1;
 			}
 		}
 		else
 		{
-			cout << "**********choose the database fault*************" << endl;
+			Log("*************choose the database fault*************", false);
+			DBmtx.unlock();
 			return 0;
 		}
 	}
 	else
 	{
-		cout << "unable to connect the database,check your configuration!" << endl;
+		Log("unable to connect the database,check your configuration!", false);
+		DBmtx.unlock();
 		return 0;
 	}
 }

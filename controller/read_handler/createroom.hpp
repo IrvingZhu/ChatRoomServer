@@ -20,7 +20,7 @@ void createRoom(std::string content, int info, sock_ptr sock)
     // search exist
     string exist_query("select id from peo_chat_r where uid = '");
     exist_query = exist_query + info_res[0] + "' and ChatRID in (select chatRID from chatroomset where ChatName = '" + info_res[2] + "')";
-    cout << "the query sentences is: " << exist_query << "\n";
+    Log("the query sentences is: " + exist_query + "\n", false);
 
     char rela_query[256];
     memset(rela_query, 0, 64 * sizeof(char));
@@ -29,8 +29,7 @@ void createRoom(std::string content, int info, sock_ptr sock)
     auto result_set = selfDefineQuery(rela_query, 1, 1);
     if (result_set.empty() == false)
     {
-        cout << "Exist chatroom, cannot to create"
-             << "\n";
+        Log("Result : Exist chatroom, cannot to create\n", false);
         sock->async_write_some(boost::asio::buffer("ErrorCre/"), boost::bind(&print_returnInfo, "ErrorToCreate"));
     }
     else

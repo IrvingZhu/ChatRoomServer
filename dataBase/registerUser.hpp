@@ -1,8 +1,9 @@
 #pragma once
 #include <iostream>
-// #include "../utility/convert/convertToNarrowChars.hpp"
 #include "mysql.h"
-// #pragma comment(lib, "libmysql.lib")
+#include <mutex>
+#include "./dataBaseMutex.hpp"
+
 #pragma comment(a, "libmysql.a")
 
 using namespace std;
@@ -28,46 +29,51 @@ int registerUser(const string &uid, const string &uname, const string &upassword
 
 	int count = 0;
 
+	DBmtx.lock();
 	con = mysql_init((MYSQL *)0); //connect utility
 
 	if (con != NULL && mysql_real_connect(con, dbip, dbuser, dbpasswd, dbname, 3306, NULL, 0))
 	{
 		if (!mysql_select_db(con, dbname))
 		{
-			cout << "********Select successfully the database!********\n"
-				 << endl;
+			Log("********Select successfully the database!********\n", false);
 			con->reconnect = 1;
 			mysql_query(con, "SET NAMES GBK"); // set the code
-			// swprintf(wquery, L"insert into people values('%s','%s','%s')", uid.c_str(), uname.c_str(), upassword1.c_str());
+
 			string s_query("insert into people values('");
 			string symbol_1("','");
 			string symbol_2("')");
             s_query = s_query + uid + symbol_1 + uname + symbol_1 + upassword1 + symbol_2;
             strcpy(query, s_query.c_str());
-			// auto query = convertToNarrowChars(wquery);
-			cout << "the query content is: " << query << "\n" << endl;
+
+			Log("the query content is: " + s_query + "\n", false);
 			rt = mysql_real_query(con, query, strlen(query));
 			
 			if (rt)
 			{ // error
-				cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
+				std::string sql_er(mysql_error(con));
+				Log("ERROR making query: " + sql_er + " !!!", false);
+				DBmtx.unlock();
 				return -2;
 			}
 			else
 			{ //success
-				cout << "successfully insert" << endl;
+				Log("successfully insert", false);
+				DBmtx.unlock();
 				return 1;
 			}
 		}
 		else
 		{
-			cout << "**********choose the database fault*************" << endl;
+			Log("**********choose the database fault*************", false);
+			DBmtx.unlock();
 			return 0;
 		}
 	}
 	else
 	{
-		cout << "unable to connect the database,check your configuration!" << endl;
+		Log("unable to connect the database,check your configuration!", false);
+		DBmtx.unlock();
 		return 0;
 	}
 }

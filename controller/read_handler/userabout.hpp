@@ -29,7 +29,7 @@ void userAbout(std::string content, std::string command, int info, sock_ptr sock
         }
 
         send_info = send_info + "/";
-        cout << send_info << endl;
+        Log("The send info is : " + send_info, false);
 
         sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&print_returnInfo, "Success search user's PeopleInfo"));
         cout << "send successful" << endl;
@@ -50,7 +50,7 @@ void userAbout(std::string content, std::string command, int info, sock_ptr sock
         }
 
         send_info = send_info + "/";
-        cout << send_info << endl;
+        Log("The send info is : " + send_info, false);
 
         sock->async_write_some(boost::asio::buffer(send_info), boost::bind(&print_returnInfo, "Success search user's all joined room"));
     }

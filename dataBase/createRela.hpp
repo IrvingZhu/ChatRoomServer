@@ -1,8 +1,9 @@
 #pragma once
 #include <iostream>
-// #include "../utility/convert/convertToNarrowChars.hpp"
 #include "mysql.h"
-// #pragma comment(lib, "libmysql.lib")
+#include <mutex>
+#include "./dataBaseMutex.hpp"
+
 #pragma comment(a, "libmysql.a")
 
 using namespace std;
@@ -27,46 +28,52 @@ int createRela(const string &ID, const string &UID, const string &ChatID)
 
     int count = 0;
 
+    DBmtx.lock();
     con = mysql_init((MYSQL *)0); //connect
 
     if (con != NULL && mysql_real_connect(con, dbip, dbuser, dbpasswd, dbname, 3306, NULL, 0))
     { // connect
         if (!mysql_select_db(con, dbname))
         {
-            cout << "********Select successfully the database!********\n"
-                 << endl;
+            Log("********Select successfully the database!********\n", false);
             con->reconnect = 1;
             mysql_query(con, "SET NAMES GBK"); // set code format
-            // swprintf(wquery, L"insert into peo_chat_r values('%s', '%s','%s')", ID.c_str(), UID.c_str(), ChatID.c_str());
+
 			string s_query("insert into peo_chat_r values('");
 			string symbol_1("','");
 			string symbol_2("')");
             s_query = s_query + ID + symbol_1 + UID + symbol_1 + ChatID + symbol_2;
-            cout << "the query sentences is: " << s_query << "\n";
+            Log("the query sentences is: " + s_query + "\n", false);
             strcpy(query, s_query.c_str());              
-            // auto query = convertToNarrowChars(wquery);
+
             rt = mysql_real_query(con, query, strlen(query)); // qurey result
             
             if (rt)
             {
-                cout << "ERROR making query: " << mysql_error(con) << " !!!" << endl;
+                std::string mql_er(mysql_error(con));
+                Log("ERROR making query: " + mql_er + " !!!", false);
+                DBmtx.unlock();
                 return 0;
             }
             else
             { // success
-                cout << "Success " << query << endl;
+                std::string sql_qr(query);
+                Log("Success " + sql_qr, false);
+                DBmtx.unlock();
                 return 1;
             }
         }
         else
         {
-            cout << "**********choose the database fault*************" << endl;
+            Log("**********choose the database fault*************", false);
+            DBmtx.unlock();
             return 0;
         }
     }
     else
     {
-        cout << "unable to connect the database,check your configuration!" << endl;
+        Log("unable to connect the database,check your configuration!", false);
+        DBmtx.unlock();
         return 0;
     }
 }

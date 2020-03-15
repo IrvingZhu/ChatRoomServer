@@ -3,8 +3,9 @@
 #include <iostream>
 #include "mysql.h"
 #include <vector>
-// #include "../utility/convert/convertToNarrowChars.hpp"
-// #pragma comment(lib, "libmysql.lib")
+#include <mutex>
+#include "./dataBaseMutex.hpp"
+
 #pragma comment(a, "libmysql.a")
 
 std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, int para)
@@ -18,6 +19,7 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
     MYSQL *con;
     MYSQL_RES *res;
     MYSQL_ROW row;
+    std::mutex mtx;
     //database configuartion
     char dbip[32] = "localhost";
     char dbuser[32] = "root";
@@ -32,21 +34,23 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
 
     int count = 0;
 
+    mtx.lock();
 	con = mysql_init((MYSQL *)0); //connect
 
     if (con != NULL && mysql_real_connect(con, dbip, dbuser, dbpasswd, dbname, 3306, NULL, 0))
     { // connect
         if (!mysql_select_db(con, dbname))
         {
-            std::cout << "********Select successfully the database!********\n"
-                      << std::endl;
+            Log("********Select successfully the database!********\n", false);
             con->reconnect = 1;
             mysql_query(con, "SET NAMES GBK"); // set code format
-            // auto query = convertToNarrowChars(wquery);
+
             rt = mysql_real_query(con, mquery, strlen(mquery)); // qurey result
             if (rt)
             {
-                std::cout << "ERROR making query: " << mysql_error(con) << " !!!" << std::endl;
+                std::string sql_er(mysql_error(con));
+				Log("ERROR making query: " + sql_er + " !!!", false);
+                DBmtx.unlock();
                 return result;
             }
             else
@@ -74,17 +78,20 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
                 }
                 mysql_free_result(res);
             }
+            DBmtx.unlock();
             return result; // return true
         }
         else
         {
-            std::cout << "**********choose the database fault*************" << std::endl;
+            Log("*************choose the database fault*************", false);
+            DBmtx.unlock();
             return result; // return null
         }
     }
     else
     {
-        std::cout << "unable to connect the database,check your configuration!" << std::endl;
+        Log("unable to connect the database,check your configuration!", false);
+        DBmtx.unlock();
         return result; // return null
     }
 }

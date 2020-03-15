@@ -25,7 +25,7 @@ void joinToRoom(std::string content, int info, sock_ptr sock)
 
     strcpy(query, s_query.c_str());
     auto search_res = selfDefineQuery(query, 1, 1);
-    cout << "the res is: " << search_res[0][0] << "\n";
+    Log("the res is: " + search_res[0][0] + "\n", false);
     auto chatRID = search_res[0][0];
 
     if (!search_res[0].empty())
@@ -33,7 +33,7 @@ void joinToRoom(std::string content, int info, sock_ptr sock)
         // search exist
         string exist_query("select id from peo_chat_r where uid = '");
         exist_query = exist_query + info_res[0] + "' and ChatRID in (select chatRID from chatroomset where ChatName = '" + info_res[2] + "')";
-        cout << "the query sentences is: " << exist_query << "\n";
+        Log("the query sentences is: " + exist_query + "\n", false);
 
         char rela_query[256];
         memset(rela_query, 0, strlen(rela_query));
@@ -42,8 +42,7 @@ void joinToRoom(std::string content, int info, sock_ptr sock)
         auto result_set = selfDefineQuery(rela_query, 1, 1);
         if (result_set.size() != 0)
         {
-            cout << "Exist joined, return SuccessJoin"
-                 << "\n";
+            Log("Exist joined, return SuccessJoin\n", false);
             sock->async_write_some(boost::asio::buffer("SuccessJoin/"), boost::bind(&print_returnInfo, "SuccessJoin"));
         }
         else
