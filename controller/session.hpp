@@ -83,9 +83,11 @@ sock_ptr chat_session::ptr_socket()
 
 void chat_session::receive()
 {
-    shared_from_this()->sock->async_read_some(boost::asio::buffer(shared_from_this()->buffer),
-                                              boost::bind(
-                                                  &chat_session::read_handler, shared_from_this()));
+    shared_from_this()->m_strand.post([this]() {
+        shared_from_this()->sock->async_read_some(boost::asio::buffer(shared_from_this()->buffer),
+                                                  boost::bind(
+                                                      &chat_session::read_handler, shared_from_this()));
+    });
 }
 
 void chat_session::deliver(const chat_message &msg)
@@ -96,10 +98,12 @@ void chat_session::deliver(const chat_message &msg)
     shared_from_this()->mtx.unlock();
     if (!write_in_progress)
     {
-        shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs.front().data(),
-                                                                       write_msgs.front().length() + 1),
-                                                   boost::bind(&chat_session::handle_write, shared_from_this(),
-                                                               boost::asio::placeholders::error));
+        shared_from_this()->m_strand.post([this]() {
+            shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs.front().data(),
+                                                                           write_msgs.front().length() + 1),
+                                                       boost::bind(&chat_session::handle_write, shared_from_this(),
+                                                                   boost::asio::placeholders::error));
+        });
         Log(shared_from_this()->sock->remote_endpoint().address().to_string() + ":" + to_string(shared_from_this()->sock->remote_endpoint().port())
              + " the write_msg size is: " + to_string(write_msgs.size()) + "(write)\n", false);
     }
@@ -115,9 +119,11 @@ void chat_session::handle_write(const boost::system::error_code &ec)
     }
     if (!write_msgs.empty())
     {
-        shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs.front().data(),
-                                                                       write_msgs.front().length() + 1),
-                                                   boost::bind(&chat_session::handle_write, shared_from_this(), ec));
+        shared_from_this()->m_strand.wrap([this, ec]() {
+            shared_from_this()->sock->async_write_some(boost::asio::buffer(write_msgs.front().data(),
+                                                                           write_msgs.front().length() + 1),
+                                                       boost::bind(&chat_session::handle_write, shared_from_this(), ec));
+        });
         Log(shared_from_this()->sock->remote_endpoint().address().to_string() + ":" + to_string(shared_from_this()->sock->remote_endpoint().port())
              + " the write_msg size is: " + to_string(write_msgs.size()) + "(handle)\n", false);
     }
@@ -280,8 +286,8 @@ void chat_session::leave(std::string content, int leave_info)
         // if it has no participant, delete them.
         shared_from_this()->mtx.lock();
         mptr->erase(iter);
-        Log("the " + info_res[0] + " Room has destoryed" + "\n", false);
         shared_from_this()->mtx.unlock();
+        Log("the " + info_res[0] + " Room has destoryed" + "\n", false);
     }
 
     shared_from_this()->timer.cancel();
