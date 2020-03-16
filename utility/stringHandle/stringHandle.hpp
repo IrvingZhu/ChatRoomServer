@@ -5,13 +5,13 @@
 #include <cstring>
 #include <mutex>
 
-std::mutex SCIOmtx;
+static std::mutex SCIOmtx;
 
 std::string getNextKey(const std::string &srcString)
 {
     // this function is used to id+1
-    char id[32];
-    memset(id, 0, strlen(id));
+    char *id = new char[32];
+    memset(id, 0, 32 * sizeof(char));
 
     strcpy(id, srcString.c_str());
     long long num_id = atoll(id);

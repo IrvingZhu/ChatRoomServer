@@ -16,17 +16,7 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
 
     std::vector<vector<std::string>> result;
 
-    MYSQL *con;
-    MYSQL_RES *res;
-    MYSQL_ROW row;
-    std::mutex mtx;
-    //database configuartion
-    char dbip[32] = "localhost";
-    char dbuser[32] = "root";
-    char dbpasswd[32] = "root";
-    char dbname[32] = "chatroom";
-    // char *mquery = new char[512];
-    char mquery[512];
+    char *mquery = new char[512];
     memset(mquery, 0, strlen(mquery));
     strcpy(mquery, wquery);
 
@@ -34,7 +24,7 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
 
     int count = 0;
 
-    mtx.lock();
+    DBmtx.lock();
 	con = mysql_init((MYSQL *)0); //connect
 
     if (con != NULL && mysql_real_connect(con, dbip, dbuser, dbpasswd, dbname, 3306, NULL, 0))
@@ -51,6 +41,8 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
                 std::string sql_er(mysql_error(con));
 				Log("ERROR making query: " + sql_er + " !!!", false);
                 DBmtx.unlock();
+                delete mquery;
+                clearDBqrConf();
                 return result;
             }
             else
@@ -79,12 +71,16 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
                 mysql_free_result(res);
             }
             DBmtx.unlock();
+            delete mquery;
+            clearDBqrConf();
             return result; // return true
         }
         else
         {
             Log("*************choose the database fault*************", false);
             DBmtx.unlock();
+            delete mquery;
+            clearDBqrConf();
             return result; // return null
         }
     }
@@ -92,6 +88,8 @@ std::vector<vector<std::string>> selfDefineQuery(char *wquery, int ret_record, i
     {
         Log("unable to connect the database,check your configuration!", false);
         DBmtx.unlock();
+        delete mquery;
+        clearDBqrConf();
         return result; // return null
     }
 }

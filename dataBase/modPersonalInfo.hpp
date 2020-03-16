@@ -19,15 +19,6 @@ int modifyPersonalInformation(const string &uid, const string &info, int type)
 	if 0,represent uname
 	if 1,represent upsw
 	*/
-	MYSQL *con;
-	//database configuartion
-	char dbip[32] = "localhost";
-	char dbuser[32] = "root";
-	char dbpasswd[32] = "root";
-	char dbname[32] = "chatroom";
-	char tablename[32] = "people";
-	char query[512] = "";
-
 	int rt; //return value
 
 	int count = 0;
@@ -66,6 +57,7 @@ int modifyPersonalInformation(const string &uid, const string &info, int type)
 			{
 				Log("the type is input Error\n", false);
 				DBmtx.unlock();
+				clearDBqrConf();
 				return 0;
 			}
 
@@ -76,12 +68,14 @@ int modifyPersonalInformation(const string &uid, const string &info, int type)
 				std::string sql_er(mysql_error(con));
 				Log("ERROR making query: " + sql_er + " !!!", false);
 				DBmtx.unlock();
+				clearDBqrConf();
 				return -2;
 			}
 			else
 			{ // success
 				Log("successfully update", false);
 				DBmtx.unlock();
+				clearDBqrConf();
 				return 1;
 			}
 		}
@@ -89,6 +83,7 @@ int modifyPersonalInformation(const string &uid, const string &info, int type)
 		{
 			Log("*************choose the database fault*************", false);
 			DBmtx.unlock();
+			clearDBqrConf();
 			return 0;
 		}
 	}
@@ -96,6 +91,7 @@ int modifyPersonalInformation(const string &uid, const string &info, int type)
 	{
 		Log("unable to connect the database,check your configuration!", false);
 		DBmtx.unlock();
+		clearDBqrConf();
 		return 0;
 	}
 }

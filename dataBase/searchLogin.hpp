@@ -14,17 +14,7 @@ int searchLogin(const string &uname, const string &upassword)
 	if true,return 1
 	error return 0
 	*/
-	MYSQL *con;
-	MYSQL_RES *res;
-	MYSQL_ROW row;
-	std::mutex mtx;
-	//database configuartion
-	char dbip[32] = "localhost";
-	char dbuser[32] = "root";
-	char dbpasswd[32] = "root";
-	char dbname[32] = "chatroom";
-	char tablename[32] = "people";
-	char query[512] = "";
+	char tablename[7] = "people";
 
 	int rt; //return value
 
@@ -52,6 +42,7 @@ int searchLogin(const string &uname, const string &upassword)
 				std::string sql_er(mysql_error(con));
 				Log("ERROR making query: " + sql_er + " !!!", false);
 				DBmtx.unlock();
+				clearDBqrConf();
 				return 0;
 			}
 			else
@@ -63,6 +54,7 @@ int searchLogin(const string &uname, const string &upassword)
 
 				if (!row){
 					DBmtx.unlock();
+					clearDBqrConf();
 					return 0;
 				}
 
@@ -72,6 +64,7 @@ int searchLogin(const string &uname, const string &upassword)
 					mysql_free_result(res);
 					Log("This query's result is true", false);
 					DBmtx.unlock();
+					clearDBqrConf();
 					return 1; // successful
 				}
 				else
@@ -79,6 +72,7 @@ int searchLogin(const string &uname, const string &upassword)
 					mysql_free_result(res);
 					Log("This query's result is false", false);
 					DBmtx.unlock();
+					clearDBqrConf();
 					return 0;
 				}
 			}
@@ -87,6 +81,7 @@ int searchLogin(const string &uname, const string &upassword)
 		{
 			Log("*************choose the database fault*************", false);
 			DBmtx.unlock();
+			clearDBqrConf();
 			return 0;
 		}
 	}
@@ -94,6 +89,7 @@ int searchLogin(const string &uname, const string &upassword)
 	{
 		Log("unable to connect the database,check your configuration!", false);
 		DBmtx.unlock();
+		clearDBqrConf();
 		return 0;
 	}
 }

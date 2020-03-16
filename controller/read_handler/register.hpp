@@ -16,7 +16,7 @@ void Register_user(std::string content, int register_info, sock_ptr sock)
     // format is "Register [uname] [upassword]"
     auto info_res = retriveData(content, register_info);
 
-    char people_query[64];
+    char *people_query = new char[64];
     memset(people_query, 0, strlen(people_query));
     strcpy(people_query, "select uid from people order by uid desc");
 
@@ -33,4 +33,6 @@ void Register_user(std::string content, int register_info, sock_ptr sock)
     {
         sock->async_write_some(boost::asio::buffer("ErrorRegister/"), boost::bind(&print_returnInfo, "ErrorRegister"));
     }
+
+    delete people_query;
 }

@@ -6,6 +6,7 @@
 #include <cstring>
 #include <vector>
 #include <queue>
+#include <memory>
 
 // information
 // body+header
@@ -58,8 +59,9 @@ private:
     }
 
 public:
-    chat_message(const std::string &username, const std::string &send_info) : body_length(send_info.size()),
-                                                                              user_length(username.size())
+    chat_message(const std::string &username, const std::string &send_info)
+                 : body_length(send_info.size()),
+                   user_length(username.size())
     {
         memset(this->dataBuf, 0, (max_user_length + max_body_length) * sizeof(char));
 
@@ -88,7 +90,9 @@ public:
         return user_length + body_length + 2;
     }
 
-    ~chat_message() {}
+    ~chat_message() 
+    {}
 };
 
-typedef std::deque<chat_message> chat_message_queue;
+typedef chat_message deliver_msg;
+typedef std::deque<deliver_msg> chat_message_queue;

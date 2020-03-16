@@ -52,7 +52,7 @@ public:
     boost::asio::ip::tcp::socket &socket();
     sock_ptr ptr_socket();
     void receive();
-    void deliver(const chat_message &msg);
+    void deliver(const deliver_msg &msg);
     void heart_beating();
     void heart_handler();
     ~chat_session();
@@ -68,7 +68,7 @@ chat_session::chat_session(boost::asio::io_service &io_service, map_ptr mptr)
       m_strand(io_service),
       ios(io_service)
 {
-    memset(this->buffer, 0, 2048 * sizeof(char));
+    memset(buffer, 0, 2048 * sizeof(char));
 }
 
 boost::asio::ip::tcp::socket &chat_session::socket()
@@ -90,7 +90,7 @@ void chat_session::receive()
     });
 }
 
-void chat_session::deliver(const chat_message &msg)
+void chat_session::deliver(const deliver_msg &msg)
 {
     bool write_in_progress = !write_msgs.empty();
     shared_from_this()->mtx.lock();

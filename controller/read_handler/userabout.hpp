@@ -15,7 +15,7 @@ void userAbout(std::string content, std::string command, int info, sock_ptr sock
 {
     if (command.compare("SearchUserAllInfo") == 0)
     {
-        // format is "SendUserInfo [uname]"
+        // format is "SearchUserAllInfo [uname]"
         auto info_res = retriveData(content, info);
         auto search_user_info = searchAllOfPeople(info_res[0], 1);
         auto iter = search_user_info.begin();

@@ -22,17 +22,6 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 	// uid 0
 	// uname 1
 	vector<string> result;
-
-	MYSQL *con;
-	MYSQL_RES *res;
-	MYSQL_ROW row;
-	//database configuartion
-	char dbip[32] = "localhost";
-	char dbuser[32] = "root";
-	char dbpasswd[32] = "root";
-	char dbname[32] = "chatroom";
-	char query[512] = "";
-
 	int rt; //return value
 
 	int count = 0;
@@ -61,13 +50,14 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 			{
 				// uname
 				string s_query("select * from people where UNAME = '");
-				string symbol("'\n");
+				string symbol("'\0");
 				s_query = s_query + Search_info + symbol;
 
 				strcpy(query, s_query.c_str());
 			}
 			else{
 				DBmtx.unlock();
+				clearDBqrConf();
 				return result;
 			}
 
@@ -77,6 +67,7 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 				std::string sql_er(mysql_error(con));
 				Log("ERROR making query: " + sql_er + " !!!", false);
 				DBmtx.unlock();
+				clearDBqrConf();
 				return result;
 			}
 			else
@@ -91,6 +82,7 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 				if (!row) 
 				{
 					DBmtx.unlock();
+					clearDBqrConf();
 					return result;
 				}
 				while (i < peo_table_element_num)
@@ -102,12 +94,14 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 				mysql_free_result(res);
 			}
 			DBmtx.unlock();
+			clearDBqrConf();
 			return result;
 		}
 		else
 		{
 			Log("**********choose the database fault*************", false);
 			DBmtx.unlock();
+			clearDBqrConf();
 			return result; // return null
 		}
 	}
@@ -115,6 +109,7 @@ vector<string> searchAllOfPeople(const string &Search_info, int type)
 	{
 		Log("unable to connect the database,check your configuration!", false);
 		DBmtx.unlock();
+		clearDBqrConf();
 		return result; // return null
 	}
 }

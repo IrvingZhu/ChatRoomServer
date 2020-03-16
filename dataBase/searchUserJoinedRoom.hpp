@@ -13,16 +13,6 @@ using namespace std;
 vector<string> searchUserJoinedRoom(const string &info){
 	vector<string> result;
 
-	MYSQL *con;
-	MYSQL_RES *res;
-	MYSQL_ROW row;
-	//database configuartion
-	char dbip[32] = "localhost";
-	char dbuser[32] = "root";
-	char dbpasswd[32] = "root";
-	char dbname[32] = "chatroom";
-	char query[512] = "";
-
 	int rt; //return value
 
 	int count = 0;
@@ -52,6 +42,7 @@ vector<string> searchUserJoinedRoom(const string &info){
 				std::string sql_er(mysql_error(con));
 				Log("ERROR making query: " + sql_er + " !!!", false);
 				DBmtx.unlock();
+				clearDBqrConf();
 				return result;
 			}
 			else
@@ -69,12 +60,14 @@ vector<string> searchUserJoinedRoom(const string &info){
 				mysql_free_result(res);
 			}
 			DBmtx.unlock();
+			clearDBqrConf();
 			return result;
 		}
 		else
 		{
 			Log("*************choose the database fault*************", false);
 			DBmtx.unlock();
+			clearDBqrConf();
 			return result; // return null
 		}
 	}
@@ -82,6 +75,7 @@ vector<string> searchUserJoinedRoom(const string &info){
 	{
 		Log("unable to connect the database,check your configuration!", false);
 		DBmtx.unlock();
+		clearDBqrConf();
 		return result; // return null
 	}
 }

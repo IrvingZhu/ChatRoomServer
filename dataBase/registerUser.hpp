@@ -16,15 +16,6 @@ int registerUser(const string &uid, const string &uname, const string &upassword
 	uid exist return -2
 	connect error return 0
 	*/
-	MYSQL *con;
-	//database configuartion
-	char dbip[32] = "localhost";
-	char dbuser[32] = "root";
-	char dbpasswd[32] = "root";
-	char dbname[32] = "chatroom";
-	char tablename[32] = "people";
-	char query[256] = "";
-
 	int rt; //return value
 
 	int count = 0;
@@ -54,12 +45,14 @@ int registerUser(const string &uid, const string &uname, const string &upassword
 				std::string sql_er(mysql_error(con));
 				Log("ERROR making query: " + sql_er + " !!!", false);
 				DBmtx.unlock();
+				clearDBqrConf();
 				return -2;
 			}
 			else
 			{ //success
 				Log("successfully insert", false);
 				DBmtx.unlock();
+				clearDBqrConf();
 				return 1;
 			}
 		}
@@ -67,6 +60,7 @@ int registerUser(const string &uid, const string &uname, const string &upassword
 		{
 			Log("**********choose the database fault*************", false);
 			DBmtx.unlock();
+			clearDBqrConf();
 			return 0;
 		}
 	}
@@ -74,6 +68,7 @@ int registerUser(const string &uid, const string &uname, const string &upassword
 	{
 		Log("unable to connect the database,check your configuration!", false);
 		DBmtx.unlock();
+		clearDBqrConf();
 		return 0;
 	}
 }

@@ -31,7 +31,8 @@ public:
     bool is_participant_empty();
 };
 
-chat_room::chat_room(boost::asio::io_service &ios) : m_strand(ios) {}
+chat_room::chat_room(boost::asio::io_service &ios)
+                     : m_strand(ios) {}
 
 void chat_room::join(chat_participant_ptr participant)
 {
@@ -52,7 +53,7 @@ void chat_room::leave(chat_participant_ptr participant)
 
 void chat_room::deliever(const std::string &userName, const std::string &send_info)
 {
-    chat_message msg(userName, send_info);
+    deliver_msg msg(userName, send_info);
     this->m_strand.dispatch([this, &userName, &send_info, &msg]() {
         recent_msgs_.push_back(msg);
         while (recent_msgs_.size() > max_recent_msgs)

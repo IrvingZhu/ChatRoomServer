@@ -10,6 +10,8 @@ vector<string> retriveData(string src, int num)
 {
     int i = 0, start = 0, end = 0;
     vector<string> res;
+    int end_str = src.find('\0');
+    src = src.substr(0, end_str);
     if (num == 0)
     {
         return res;

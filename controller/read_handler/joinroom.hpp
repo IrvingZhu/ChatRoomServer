@@ -16,7 +16,7 @@ void joinToRoom(std::string content, int info, sock_ptr sock)
     // format is "JoinNewChatRoom [UID] [Uname] [RoomName]"
     auto info_res = retriveData(content, info);
 
-    char query[64];
+    char *query = new char[64];
     memset(query, 0, strlen(query));
 
     string s_query("select ChatRID from chatroomset where ChatName = '");
@@ -35,7 +35,7 @@ void joinToRoom(std::string content, int info, sock_ptr sock)
         exist_query = exist_query + info_res[0] + "' and ChatRID in (select chatRID from chatroomset where ChatName = '" + info_res[2] + "')";
         Log("the query sentences is: " + exist_query + "\n", false);
 
-        char rela_query[256];
+        char *rela_query = new char[256];
         memset(rela_query, 0, strlen(rela_query));
         strcpy(rela_query, exist_query.c_str());
 
@@ -66,9 +66,11 @@ void joinToRoom(std::string content, int info, sock_ptr sock)
                 sock->async_write_some(boost::asio::buffer("ErrorQuery/"), boost::bind(&print_returnInfo, "ErrorJoin"));
             }
         }
+        delete rela_query;
     }
     else
     {
         sock->async_write_some(boost::asio::buffer("ChatRoomNotExist/"), boost::bind(&print_returnInfo, "RoomExist"));
     }
+    delete query;
 }

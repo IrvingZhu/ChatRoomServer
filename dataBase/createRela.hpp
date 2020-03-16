@@ -14,16 +14,6 @@ int createRela(const string &ID, const string &UID, const string &ChatID)
 	if true,return 1
 	error return 0
 	*/
-    MYSQL *con;
-    MYSQL_RES *res;
-    MYSQL_ROW row;
-    //database configuartion
-    char dbip[32] = "localhost";
-    char dbuser[32] = "root";
-    char dbpasswd[32] = "root";
-    char dbname[32] = "chatroom";
-    char query[512] = "";
-
     int rt; //return value
 
     int count = 0;
@@ -53,6 +43,7 @@ int createRela(const string &ID, const string &UID, const string &ChatID)
                 std::string mql_er(mysql_error(con));
                 Log("ERROR making query: " + mql_er + " !!!", false);
                 DBmtx.unlock();
+                clearDBqrConf();
                 return 0;
             }
             else
@@ -60,6 +51,7 @@ int createRela(const string &ID, const string &UID, const string &ChatID)
                 std::string sql_qr(query);
                 Log("Success " + sql_qr, false);
                 DBmtx.unlock();
+                clearDBqrConf();
                 return 1;
             }
         }
@@ -67,6 +59,7 @@ int createRela(const string &ID, const string &UID, const string &ChatID)
         {
             Log("**********choose the database fault*************", false);
             DBmtx.unlock();
+            clearDBqrConf();
             return 0;
         }
     }
@@ -74,6 +67,7 @@ int createRela(const string &ID, const string &UID, const string &ChatID)
     {
         Log("unable to connect the database,check your configuration!", false);
         DBmtx.unlock();
+        clearDBqrConf();
         return 0;
     }
 }
