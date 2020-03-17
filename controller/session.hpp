@@ -223,7 +223,9 @@ void chat_session::access_room(std::string content, int access_info)
 {
     // format is "AccessChatRoom [UserName] [ChatName]"
     auto info_res = retriveData(content, access_info);
+    shared_from_this()->mtx.lock();
     auto iter = mptr->find(info_res[1]);
+    shared_from_this()->mtx.unlock();
     std::string room = info_res[1];
 
     shared_from_this()->roomname = shared_from_this()->roomname + room;
@@ -263,7 +265,9 @@ void chat_session::chat(std::string content, int chat_info)
     shared_from_this()->timer.async_wait(boost::bind(&chat_session::heart_beating, shared_from_this()));
 
     auto info_res = retriveData(content, chat_info);
+    shared_from_this()->mtx.lock();
     auto iter = mptr->find(info_res[0]); // chat room name
+    shared_from_this()->mtx.unlock();
     auto this_room = iter->second;
 
     // size jduge is client things
@@ -274,23 +278,26 @@ void chat_session::leave(std::string content, int leave_info)
 {
     // format: "Leave [RoomName]"
     auto info_res = retriveData(content, leave_info);
+    shared_from_this()->mtx.lock();
     auto iter = mptr->find(info_res[0]); // chat room name
-    auto this_room = iter->second;
 
-    // leave
-    this_room->leave(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
-    shared_from_this()->status = 0;
+    if(iter != mptr->end()){
+        auto this_room = iter->second;
 
-    if (this_room->is_participant_empty())
-    {
-        // if it has no participant, delete them.
-        shared_from_this()->mtx.lock();
-        mptr->erase(iter);
-        shared_from_this()->mtx.unlock();
-        Log("the " + info_res[0] + " Room has destoryed" + "\n", false);
+        // leave
+        this_room->leave(std::dynamic_pointer_cast<chat_participant>(shared_from_this()));
+        shared_from_this()->status = 0;
+
+        if (this_room->is_participant_empty())
+        {
+            // if it has no participant, delete them.
+            mptr->erase(iter);
+            Log("the " + info_res[0] + " Room has destoryed" + "\n", false);
+        }
     }
 
     shared_from_this()->timer.cancel();
+    shared_from_this()->mtx.unlock();
 }
 
 void chat_session::heart_beating()
@@ -305,6 +312,7 @@ void chat_session::heart_beating()
 void chat_session::heart_handler()
 {
     Log("\n-----------------heart_beating_finished-----------------\n", false);
+    shared_from_this()->timer.cancel();
     return;
 }
 
